@@ -1,5 +1,3 @@
-import Icon from '@expo/vector-icons/MaterialCommunityIcons';
-import React from 'react';
 import {
   Image,
   SafeAreaView,
@@ -11,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import 'react-native-get-random-values';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
 // Componente para os botões de ação (Medicação, Exames, etc.)
@@ -52,7 +50,7 @@ const App = () => {
         <View style={styles.header}>
           {/* MUDANÇA AQUI: Carregando o logo localmente */}
           <Image
-            source={require('./assets/images/logo.png')} // <-- USE O NOME DO SEU ARQUIVO DE LOGO
+            source={require('assets/images/logo.jng')} // <-- USE O NOME DO SEU ARQUIVO DE LOGO
             style={styles.logo}
           />
         </View>
@@ -78,7 +76,7 @@ const App = () => {
           <View style={styles.bannerContainer}>
             {/* MUDANÇA AQUI: Carregando o banner localmente */}
             <Image
-              source={require('./assets/images/banner.jpg')} // <-- USE O NOME DO SEU ARQUIVO DE BANNER
+              source={require('assets/images/banner.jpg')} // <-- USE O NOME DO SEU ARQUIVO DE BANNER
               style={styles.bannerImage}
               resizeMode="cover"
             />
