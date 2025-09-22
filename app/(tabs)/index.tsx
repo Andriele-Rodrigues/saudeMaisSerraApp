@@ -1,98 +1,226 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
 
-export default function HomeScreen() {
+// Componente para os botões de ação (Medicação, Exames, etc.)
+const ActionButton = ({iconName, label}: {iconName: string; label: string}) => (
+  <TouchableOpacity style={styles.actionButton}>
+    <Icon name={iconName} size={30} color="#008584" />
+    <Text style={styles.actionButtonText}>{label}</Text>
+  </TouchableOpacity>
+);
+
+// Componente para a barra de navegação inferior
+const BottomNavBar = () => (
+  <View style={styles.navBar}>
+    <TouchableOpacity style={styles.navItem}>
+      <Icon name="home" size={28} color="#008584" />
+      <Text style={styles.navTextActive}>Início</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.navItem}>
+      <Icon name="" size={28} color="#888" />
+      <Text style={styles.navText}>Carteira</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.navItem}>
+      <Icon name="calendar" size={28} color="#888" />
+      <Text style={styles.navText}>Agenda</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.navItem}>
+      <Icon name="account-circle-outline" size={28} color="#888" />
+      <Text style={styles.navText}>Perfil</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const App = () => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#008584" />
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.header}>
+          {/* MUDANÇA AQUI: Carregando o logo localmente */}
+          <Image
+            source={require('assets/images/logo.png')} // <-- USE O NOME DO SEU ARQUIVO DE LOGO
+            style={styles.logo}
+          />
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <View style={styles.body}>
+          {/* ... (O restante do código do corpo do app) ... */}
+          <View style={styles.searchContainer}>
+            <Icon name="magnify" size={20} color="#888" style={styles.searchIcon} />
+            <TextInput placeholder="Pesquisa" style={styles.searchInput} />
+            <Icon name="close" size={20} color="#888" />
+          </View>
+
+          <TouchableOpacity style={styles.guideButton}>
+            <Text style={styles.guideButtonText}>Guia Médico</Text>
+          </TouchableOpacity>
+
+          <View style={styles.actionGrid}>
+            <ActionButton iconName="pill" label="Medicação" />
+            <ActionButton iconName="clipboard-text-outline" label="Exames" />
+            <ActionButton iconName="human-wheelchair" label="Sintomas" />
+          </View>
+
+          <View style={styles.bannerContainer}>
+            {/* MUDANÇA AQUI: Carregando o banner localmente */}
+            <Image
+                          source={require('assets/images/banner.png')} // <-- USE O NOME DO SEU ARQUIVO DE BANNER
+                          style={styles.bannerImage}
+                          resizeMode="cover"
+                        />
+          </View>
+
+          <View style={styles.actionGrid}>
+            <ActionButton iconName="star-outline" label="Favoritos" />
+            <ActionButton iconName="bell-outline" label="Notificação" />
+            <ActionButton iconName="message-outline" label="Mensagens" />
+          </View>
+        </View>
+      </ScrollView>
+      <BottomNavBar />
+    </SafeAreaView>
   );
-}
+};
 
+// ... (Os estilos continuam os mesmos)
 const styles = StyleSheet.create({
-  titleContainer: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#E0F2F1',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  header: {
+    backgroundColor: '#008584',
+    paddingTop: 20,
+    paddingBottom: 60,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  logo: {
+    width: 300,
+    height: 100,
+    marginRight: 10,
+    // A propriedade tintColor só funciona bem com PNGs de uma cor,
+    // se seu logo for colorido, remova a linha abaixo.
+    tintColor: 'white',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  headerText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  body: {
+    marginTop: -40,
+    paddingHorizontal: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+  },
+  guideButton: {
+    backgroundColor: '#00A9A5',
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  guideButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  actionGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  actionButton: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    width: '31%',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  actionButtonText: {
+    marginTop: 8,
+    color: '#333',
+    fontSize: 14,
+  },
+  bannerContainer: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  bannerImage: {
+    width: '100%',
+    height: 210,
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingVertical: 10,
+    paddingBottom: 15,
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+  navText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  navTextActive: {
+    fontSize: 12,
+    color: '#008584',
+    fontWeight: 'bold',
   },
 });
+
+export default App;
