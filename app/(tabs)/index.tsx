@@ -1,5 +1,4 @@
 import {
-  Image,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -49,10 +48,6 @@ const App = () => {
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           {/* MUDANÇA AQUI: Carregando o logo localmente */}
-          <Image
-            source={require('assets/images/logo.png')} // <-- USE O NOME DO SEU ARQUIVO DE LOGO
-            style={styles.logo}
-          />
         </View>
 
         <View style={styles.body}>
@@ -75,11 +70,7 @@ const App = () => {
 
           <View style={styles.bannerContainer}>
             {/* MUDANÇA AQUI: Carregando o banner localmente */}
-            <Image
-                          source={require('assets/images/banner.png')} // <-- USE O NOME DO SEU ARQUIVO DE BANNER
-                          style={styles.bannerImage}
-                          resizeMode="cover"
-                        />
+            
           </View>
 
           <View style={styles.actionGrid}>
