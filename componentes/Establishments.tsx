@@ -18,7 +18,7 @@ const Establishments: React.FC<EstablishmentsProps> = ({ serviceTypeId, setSelec
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    const baseUrl = `http://10.0.2.2:3000/estabelecimentos/${serviceTypeId}`; // Para emulador Android
+    const baseUrl = `http://localhost:3000/estabelecimentos/${serviceTypeId}`; // Para emulador Android
     // Para dispositivos físicos, substitua pelo IP da sua máquina:
     // const baseUrl = `http://10.0.12.8:3000/estabelecimentos/${serviceTypeId}`; 
 

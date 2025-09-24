@@ -17,7 +17,7 @@ const ServiceTypes: React.FC<ServiceTypesProps> = ({ setSelectedServiceType }) =
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-     const baseUrl = 'http://10.0.2.2:3000/tipos-servicos'; // Use para o emulador Android
+     const baseUrl = 'http://localhost:3000/tipos-servicos'; // Use para o emulador Android
 
     // Se estiver em dispositivo físico, substitua 'localhost' pelo IP da sua máquina:
     // const baseUrl = 'http://10.0.12.8:3000/tipos-servicos'; // Use para dispositivos físicos
