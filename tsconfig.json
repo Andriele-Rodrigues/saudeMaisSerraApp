@@ -19,6 +19,6 @@
     "src/components/screens/MenuScreen.js",
     "app/(tabs)/index.tsx",
     "app/componentes/ServiceTypes.js",
-    "mock-api/api/serve.js"
+    "app/(tabs)/api/server.js"
   ],
 }
