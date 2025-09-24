@@ -1,28 +1,26 @@
-import { AppointmentProvider } from "@/src/components/contexts/AppointmentContext";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
 
-import ConfirmScreen from "@/src/components/screens/ConfirmScrean";
-import MenuScreen from "@/src/components/screens/MenuScreen";
-import SelectDateScreen from "@/src/components/screens/SelectDataScreana";
-import SelectDoctorScreen from "@/src/components/screens/SelectDoctorScreen";
-import SelectTimeScreen from "@/src/components/screens/SelectTimeScreena";
+// Importando as telas
+import App from '@/app/(tabs)/index';
+import Appointment from '@/src/components/screens/Appointment'; // Tela Agendamentos
+import Profile from '@/src/components/screens/Profile'; // Tela Perfil
+import VaccineCard from '@/src/components/screens/VaccineCard'; // Tela Carteira de Vacina
 
-const Stack = createNativeStackNavigator();
-function AppNavigator() {
+const Stack = createStackNavigator();
+
+const AppNavigator = () => {
   return (
-    <AppointmentProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Menu" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Menu" component={MenuScreen} />
-          <Stack.Screen name="SelectDoctor" component={SelectDoctorScreen} />
-          <Stack.Screen name="SelectDate" component={SelectDateScreen} />
-          <Stack.Screen name="SelectTime" component={SelectTimeScreen} />
-          <Stack.Screen name="Confirm" component={ConfirmScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AppointmentProvider>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={App} />
+        <Stack.Screen name="VaccineCard" component={VaccineCard} />
+        <Stack.Screen name="Appointment" component={Appointment} />
+        <Stack.Screen name="Profile" component={Profile} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
 export default AppNavigator;

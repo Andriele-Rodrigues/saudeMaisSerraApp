@@ -1,6 +1,6 @@
-import Booking from '@/componentes/Booking';
-import Establishments from '@/componentes/Establishments';
-import ServiceTypes from '@/componentes/ServiceTypes';
+import Booking from '@/componentes/Booking'; // Importando componente Booking
+import Establishments from '@/componentes/Establishments'; // Importando componente Establishments
+import ServiceTypes from '@/componentes/ServiceTypes'; // Importando componente ServiceTypes
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -35,7 +35,7 @@ const BottomNavBar = () => (
   </View>
 );
 
-const App = () => {
+const HomeScreen = () => {
   const [selectedServiceType, setSelectedServiceType] = useState<number | null>(null);
   const [selectedEstablishment, setSelectedEstablishment] = useState<number | null>(null);
 
@@ -210,4 +210,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default HomeScreen;

@@ -12,6 +12,13 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "componentss/DoctorCard.js", "componentss/contextss/AppointmentContext.js", "componentss/contextss/AppointmentContext.js", "src/components/screens/MenuScreen.js", "app/(tabs)/index.tsx", "app/(tabs)/index.tsx", "app/componentes/ServiceTypes.j, "mock-api/serve.js"s"  ]
+    "expo-env.d.ts",
+    "componentss/DoctorCard.js",
+    "componentss/contextss/AppointmentContext.js",
+    "componentss/contextss/AppointmentContext.js",
+    "src/components/screens/MenuScreen.js",
+    "app/(tabs)/index.tsx",
+    "app/componentes/ServiceTypes.js",
+    "mock-api/api/serve.js"
+  ],
 }
