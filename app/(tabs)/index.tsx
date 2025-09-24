@@ -1,28 +1,20 @@
-
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import Booking from '@/componentes/Booking';
+import Establishments from '@/componentes/Establishments';
+import ServiceTypes from '@/componentes/ServiceTypes';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-
 // Componente para os botões de ação (Medicação, Exames, etc.)
-const ActionButton = ({iconName, label}: {iconName: string; label: string}) => (
-  <TouchableOpacity style={styles.actionButton}>
+const ActionButton = ({iconName, label, onPress}: {iconName: string; label: string; onPress: () => void}) => (
+  <TouchableOpacity style={styles.actionButton} onPress={onPress}>
     <Icon name={iconName} size={30} color="#008584" />
     <Text style={styles.actionButtonText}>{label}</Text>
   </TouchableOpacity>
 );
 
 // Componente para a barra de navegação inferior
-const BottomNavBar = ( { } ) => (
-  
+const BottomNavBar = () => (
   <View style={styles.navBar}>
     <TouchableOpacity style={styles.navItem}>
       <Icon name="home" size={28} color="#008584" />
@@ -32,13 +24,10 @@ const BottomNavBar = ( { } ) => (
       <Icon name="" size={28} color="#888" />
       <Text style={styles.navText}>Carteira</Text>
     </TouchableOpacity>
-    <TouchableOpacity
-        style={styles.navItem}
-       
-      >
-        <Icon name="calendar" size={28} color="#888" />
-        <Text style={styles.navText}>Agenda</Text>
-      </TouchableOpacity>
+    <TouchableOpacity style={styles.navItem}>
+      <Icon name="calendar" size={28} color="#888" />
+      <Text style={styles.navText}>Agenda</Text>
+    </TouchableOpacity>
     <TouchableOpacity style={styles.navItem}>
       <Icon name="account-circle-outline" size={28} color="#888" />
       <Text style={styles.navText}>Perfil</Text>
@@ -47,16 +36,18 @@ const BottomNavBar = ( { } ) => (
 );
 
 const App = () => {
+  const [selectedServiceType, setSelectedServiceType] = useState<number | null>(null);
+  const [selectedEstablishment, setSelectedEstablishment] = useState<number | null>(null);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#008584" />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          {/* MUDANÇA AQUI: Carregando o logo localmente */}
+          <Text style={styles.headerText}>Saúde Mais Serra</Text>
         </View>
 
         <View style={styles.body}>
-          {/* ... (O restante do código do corpo do app) ... */}
           <View style={styles.searchContainer}>
             <Icon name="magnify" size={20} color="#888" style={styles.searchIcon} />
             <TextInput placeholder="Pesquisa" style={styles.searchInput} />
@@ -68,20 +59,30 @@ const App = () => {
           </TouchableOpacity>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="pill" label="Medicação" />
-            <ActionButton iconName="clipboard-text-outline" label="Exames" />
-            <ActionButton iconName="human-wheelchair" label="Sintomas" />
+            <ActionButton iconName="pill" label="Medicação" onPress={() => { /* Navegar para Medicação */ }} />
+            <ActionButton iconName="clipboard-text-outline" label="Exames" onPress={() => { /* Navegar para Exames */ }} />
+            <ActionButton iconName="human-wheelchair" label="Sintomas" onPress={() => { /* Navegar para Sintomas */ }} />
           </View>
 
           <View style={styles.bannerContainer}>
-            {/* MUDANÇA AQUI: Carregando o banner localmente */}
-            
+            {/* Carregar banner aqui */}
           </View>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="star-outline" label="Favoritos" />
-            <ActionButton iconName="bell-outline" label="Notificação" />
-            <ActionButton iconName="message-outline" label="Mensagens" />
+            <ActionButton iconName="star-outline" label="Favoritos" onPress={() => { /* Navegar para Favoritos */ }} />
+            <ActionButton iconName="bell-outline" label="Notificação" onPress={() => { /* Navegar para Notificações */ }} />
+            <ActionButton iconName="message-outline" label="Mensagens" onPress={() => { /* Navegar para Mensagens */ }} />
+          </View>
+
+          {/* Tela de Navegação - Dependendo da ação, renderizar ServiceTypes, Establishments ou Booking */}
+          <View style={styles.screenContainer}>
+            {!selectedServiceType ? (
+              <ServiceTypes setSelectedServiceType={setSelectedServiceType} />
+            ) : !selectedEstablishment ? (
+              <Establishments serviceTypeId={selectedServiceType} setSelectedEstablishment={setSelectedEstablishment} />
+            ) : (
+              <Booking establishmentId={selectedEstablishment} />
+            )}
           </View>
         </View>
       </ScrollView>
@@ -90,7 +91,6 @@ const App = () => {
   );
 };
 
-// ... (Os estilos continuam os mesmos)
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -110,14 +110,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: {
-    width: 300,
-    height: 100,
-    marginRight: 10,
-    // A propriedade tintColor só funciona bem com PNGs de uma cor,
-    // se seu logo for colorido, remova a linha abaixo.
-    tintColor: 'white',
-  },
   headerText: {
     color: 'white',
     fontSize: 24,
@@ -135,7 +127,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     elevation: 3,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
@@ -173,7 +165,7 @@ const styles = StyleSheet.create({
     width: '31%',
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
   },
@@ -188,13 +180,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
   },
-  bannerImage: {
-    width: '100%',
-    height: 210,
+  screenContainer: {
+    marginBottom: 60, // To prevent overlapping with the bottom navbar
   },
   navBar: {
     flexDirection: 'row',

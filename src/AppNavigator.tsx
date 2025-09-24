@@ -19,7 +19,6 @@ function AppNavigator() {
           <Stack.Screen name="SelectDate" component={SelectDateScreen} />
           <Stack.Screen name="SelectTime" component={SelectTimeScreen} />
           <Stack.Screen name="Confirm" component={ConfirmScreen} />
-         
         </Stack.Navigator>
       </NavigationContainer>
     </AppointmentProvider>
