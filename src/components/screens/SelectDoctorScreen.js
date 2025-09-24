@@ -1,6 +1,6 @@
+import DoctorCard from "@/components/DoctorCard";
 import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import DoctorCard from "../components/DoctorCard";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 
 const doctorsMock = [
   { id: "d1", name: "Dr. Carlos Silva", specialty: "Clínico Geral", initials: "CS" },

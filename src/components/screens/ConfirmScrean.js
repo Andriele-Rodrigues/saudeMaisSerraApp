@@ -1,6 +1,6 @@
+import { AppointmentContext } from "@/components/contextss/AppointmentContext";
 import { useContext } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { AppointmentContext } from "../contexts/AppointmentContext";
 
 const ConfirmScreen = ({ route, navigation }) => {
   const { doctor, date, time } = route.params;

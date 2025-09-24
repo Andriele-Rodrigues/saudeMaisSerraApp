@@ -1,3 +1,4 @@
+
 import {
   SafeAreaView,
   ScrollView,
@@ -20,7 +21,8 @@ const ActionButton = ({iconName, label}: {iconName: string; label: string}) => (
 );
 
 // Componente para a barra de navegação inferior
-const BottomNavBar = () => (
+const BottomNavBar = ( { } ) => (
+  
   <View style={styles.navBar}>
     <TouchableOpacity style={styles.navItem}>
       <Icon name="home" size={28} color="#008584" />
@@ -30,10 +32,13 @@ const BottomNavBar = () => (
       <Icon name="" size={28} color="#888" />
       <Text style={styles.navText}>Carteira</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.navItem}>
-      <Icon name="calendar" size={28} color="#888" />
-      <Text style={styles.navText}>Agenda</Text>
-    </TouchableOpacity>
+    <TouchableOpacity
+        style={styles.navItem}
+       
+      >
+        <Icon name="calendar" size={28} color="#888" />
+        <Text style={styles.navText}>Agenda</Text>
+      </TouchableOpacity>
     <TouchableOpacity style={styles.navItem}>
       <Icon name="account-circle-outline" size={28} color="#888" />
       <Text style={styles.navText}>Perfil</Text>
