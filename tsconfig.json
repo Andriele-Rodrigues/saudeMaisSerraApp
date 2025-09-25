@@ -3,9 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -19,6 +17,6 @@
     "src/components/screens/MenuScreen.js",
     "app/(tabs)/index.tsx",
     "app/componentes/ServiceTypes.js",
-    "app/(tabs)/api/server.js"
+    "server.js"
   ],
 }

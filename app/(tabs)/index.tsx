@@ -1,44 +1,21 @@
-import Booking from '@/componentes/Booking';
-import Establishments from '@/componentes/Establishments';
-import ServiceTypes from '@/componentes/ServiceTypes';
-import React, { useState } from 'react';
+import { Href, Link } from 'expo-router'; // 👈 IMPORTANTE: Importe o Link
+import React from 'react';
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-// Componente para os botões de ação (Medicação, Exames, etc.)
-const ActionButton = ({iconName, label, onPress}: {iconName: string; label: string; onPress: () => void}) => (
-  <TouchableOpacity style={styles.actionButton} onPress={onPress}>
-    <Icon name={iconName} size={30} color="#fff" />
-    <Text style={styles.actionButtonText}>{label}</Text>
-  </TouchableOpacity>
+// O ActionButton continua igual
+const ActionButton = ({ iconName, label, href }: { iconName: string; label: string; href: Href }) => (
+  // Usamos o Link para envolver o botão e torná-lo navegável
+  <Link href={href} asChild>
+    <TouchableOpacity style={styles.actionButton}>
+      <Icon name={iconName} size={30} color="#fff" />
+      <Text style={styles.actionButtonText}>{label}</Text>
+    </TouchableOpacity>
+  </Link>
 );
 
-// Componente para a barra de navegação inferior
-const BottomNavBar = () => (
-  <View style={styles.navBar}>
-    <TouchableOpacity style={styles.navItem}>
-      <Icon name="home" size={28} color="#008584" />
-      <Text style={styles.navTextActive}>Início</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.navItem}>
-      <Icon name="account" size={28} color="#888" />
-      <Text style={styles.navText}>Carteira</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.navItem}>
-      <Icon name="calendar" size={28} color="#888" />
-      <Text style={styles.navText}>Agenda</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.navItem}>
-      <Icon name="account-circle-outline" size={28} color="#888" />
-      <Text style={styles.navText}>Perfil</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-const App = () => {
-  const [selectedServiceType, setSelectedServiceType] = useState<number | null>(null);
-  const [selectedEstablishment, setSelectedEstablishment] = useState<number | null>(null);
-
+// A tela principal agora é só a tela de Início
+const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#008584" />
@@ -54,43 +31,36 @@ const App = () => {
             <Icon name="close" size={20} color="#888" />
           </View>
 
-          <TouchableOpacity style={styles.guideButton}>
-            <Text style={styles.guideButtonText}>Guia Médico</Text>
-          </TouchableOpacity>
+          {/* O botão "Guia Médico" agora navega para a rota /guia-medico */}
+          <Link href="/guia-medico" asChild>
+            <TouchableOpacity style={styles.guideButton}>
+              <Text style={styles.guideButtonText}>Guia Médico</Text>
+            </TouchableOpacity>
+          </Link>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="pill" label="Medicação" onPress={() => { /* Navegar para Medicação */ }} />
-            <ActionButton iconName="clipboard-text-outline" label="Exames" onPress={() => { /* Navegar para Exames */ }} />
-            <ActionButton iconName="human-wheelchair" label="Sintomas" onPress={() => { /* Navegar para Sintomas */ }} />
+            <ActionButton iconName="pill" label="Medicação" href="/medicacao" />
+            <ActionButton iconName="clipboard-text-outline" label="Exames" href="/exames" />
+            <ActionButton iconName="human-wheelchair" label="Sintomas" href="/sintomas" />
           </View>
 
           <View style={styles.bannerContainer}>
-            {/* Carregar banner aqui */}
+             {/* Você pode colocar um <Image /> aqui */}
           </View>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="star-outline" label="Favoritos" onPress={() => { /* Navegar para Favoritos */ }} />
-            <ActionButton iconName="bell-outline" label="Notificação" onPress={() => { /* Navegar para Notificações */ }} />
-            <ActionButton iconName="message-outline" label="Mensagens" onPress={() => { /* Navegar para Mensagens */ }} />
-          </View>
-
-          {/* Tela de Navegação - Dependendo da ação, renderizar ServiceTypes, Establishments ou Booking */}
-          <View style={styles.screenContainer}>
-            {!selectedServiceType ? (
-              <ServiceTypes setSelectedServiceType={setSelectedServiceType} />
-            ) : !selectedEstablishment ? (
-              <Establishments serviceTypeId={selectedServiceType} setSelectedEstablishment={setSelectedEstablishment} />
-            ) : (
-              <Booking establishmentId={selectedEstablishment} />
-            )}
+            <ActionButton iconName="star-outline" label="Favoritos" href="/favoritos" />
+            <ActionButton iconName="bell-outline" label="Notificação" href="/notificacoes" />
+            <ActionButton iconName="message-outline" label="Mensagens" href="/mensagens" />
           </View>
         </View>
       </ScrollView>
-      <BottomNavBar />
+      {/* A Barra de Navegação foi REMOVIDA daqui, pois o _layout.tsx cuida disso */}
     </SafeAreaView>
   );
 };
 
+// Os estilos continuam os mesmos
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -164,10 +134,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '31%',
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
   },
   actionButtonText: {
     marginTop: 8,
@@ -175,39 +141,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   bannerContainer: {
+    height: 100,
+    backgroundColor: '#ccc', // Apenas para visualização
     borderRadius: 10,
     overflow: 'hidden',
     marginBottom: 20,
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-  },
-  screenContainer: {
-    marginBottom: 60, // Para não sobrepor a barra de navegação inferior
-  },
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingVertical: 10,
-    paddingBottom: 15,
-  },
-  navItem: {
-    alignItems: 'center',
-  },
-  navText: {
-    fontSize: 12,
-    color: '#888',
-  },
-  navTextActive: {
-    fontSize: 12,
-    color: '#008584',
-    fontWeight: 'bold',
   },
 });
 
-export default App;
+export default HomeScreen;
