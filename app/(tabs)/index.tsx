@@ -32,7 +32,7 @@ const HomeScreen = () => {
           </View>
 
           {/* O botão "Guia Médico" agora navega para a rota /guia-medico */}
-          <Link href="/guia-medico" asChild>
+          <Link href="/(tabs)/guia-medico" asChild>
             <TouchableOpacity style={styles.guideButton}>
               <Text style={styles.guideButtonText}>Guia Médico</Text>
             </TouchableOpacity>
