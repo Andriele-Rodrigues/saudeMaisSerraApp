@@ -3,22 +3,22 @@ import { Stack } from 'expo-router';
 export default function RootLayout() {
   return (
     <Stack>
-      {/* A tela principal será o nosso conjunto de abas. Escondemos o cabeçalho dela. */}
+      {/* A tela principal com as abas (tabs) não terá cabeçalho. */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-      {/* As outras telas (como Guia Médico, Exames, etc.) ganharão um cabeçalho automaticamente */}
-      {/* Aqui definimos como a tela de Guia Médico será apresentada (como um modal) */}
+      {/* A tela do guia-medico será um modal e também não terá o cabeçalho padrão. */}
       <Stack.Screen
         name="guia-medico"
         options={{
-          headerShown: false, // Deixa o layout interno do guia-medico controlar o cabeçalho
-          presentation: 'modal', // Efeito de subir da parte de baixo
+          headerShown: false,
+          presentation: 'modal',
         }}
       />
-      {/* As telas abaixo não precisam ser declaradas, o Stack vai criá-las automaticamente */}
-      {/* <Stack.Screen name="exames" options={{ title: 'Exames' }} /> */}
-      {/* <Stack.Screen name="sintomas" options={{ title: 'Sintomas' }} /> */}
-      {/* ... e assim por diante */}
+
+      {/* --- LINHA ADICIONADA --- */}
+      {/* Aqui declaramos a tela 'medicacao' e removemos o cabeçalho padrão dela. */}
+      <Stack.Screen name="medicacao" options={{ headerShown: false }} />
+
     </Stack>
   );
 }
