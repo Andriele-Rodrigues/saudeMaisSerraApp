@@ -17,7 +17,7 @@
     "componentss/contextss/AppointmentContext.js",
     "componentss/contextss/AppointmentContext.js",
     "src/components/screens/MenuScreen.js",
-    "app/componentes/ServiceTypes.js",
+    "app/componentes/ServiceTypes.js", "app/api/mockData.js", "app/api/mockData.js",
   
 
   ],
