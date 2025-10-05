@@ -1,4 +1,4 @@
-import { PRESTADORES } from '@/app/api/mockData';
+import { PRESTADORES } from '@/app/(tabs)/api/mockData';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Platform, SafeAreaView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';

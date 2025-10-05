@@ -1,8 +1,9 @@
-import { MEDICOS } from '@/app/api/mockData';
+
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { MEDICOS } from '../api/mockData';
 
 
 // Dados de exemplo, substitua por sua lógica real se necessário
@@ -29,34 +30,31 @@ export default function AgendarConsultaScreen() {
   }
   
   const handleConfirm = () => {
-  if (!selectedDay || !selectedTime) {
-    Alert.alert("Erro", "Por favor, selecione um dia e um horário.");
-    return;
-  }
-
-  const newAppointment = {
-    doctor: medico.nome,
-    specialty: medico.especialidade,
-    date: `${selectedDay}/10/2025`,
-    time: selectedTime,
-    address: medico.endereco,
-    phone: medico.telefone,
-    clinicName: 'Consultório Particular',
-  };
-
-  addAppointment(newAppointment);
-
-  Alert.alert(
-    "Agendamento Concluído!",
-    `A sua consulta com ${medico.nome} foi marcada com sucesso.`,
-    [
-      {
-        text: "OK",
-        onPress: () => router.replace('/(tabs)/guia-medico') // Corrigido para o nome correto da tela
+      if (!selectedDay || !selectedTime) {
+          Alert.alert("Erro", "Por favor, selecione um dia e um horário.");
+          return;
       }
-    ]
-  );
-};
+      
+      const newAppointment = {
+        doctor: medico.nome,
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Pegamos a primeira especialidade da lista para corresponder ao tipo esperado.
+        specialty: medico.especialidades[0], 
+        date: `${selectedDay}/10/2025`,
+        time: selectedTime,
+        address: medico.endereco,
+        phone: medico.telefone,
+        clinicName: medico.endereco ? 'Consultório Particular' : 'Clínica/Hospital',
+      };
+
+      addAppointment(newAppointment);
+
+      Alert.alert(
+          "Agendamento Concluído!",
+          `A sua consulta com ${medico.nome} foi marcada com sucesso.`,
+          [{ text: "OK", onPress: () => router.navigate('/') }]
+      );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,7 +62,7 @@ export default function AgendarConsultaScreen() {
         <View style={styles.header}>
           <Image source={{ uri: medico.foto }} style={styles.doctorImage} />
           <Text style={styles.doctorName}>{medico.nome}</Text>
-          <Text style={styles.doctorSpecialty}>{medico.especialidade}</Text>
+          <Text style={styles.doctorSpecialty}>{medico.especialidades.join(' / ')}</Text>
         </View>
 
         <View style={styles.section}>
