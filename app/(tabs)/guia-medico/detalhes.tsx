@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, SafeAreaView, Share, Platform } from 'react-native';
+import { PRESTADORES } from '@/app/api/mockData';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { PRESTADORES } from '@/app/data/mockData';
 import React, { useEffect, useState } from 'react';
+import { Alert, Linking, Platform, SafeAreaView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // A interface agora inclui as coordenadas (coords)
 interface Prestador {
@@ -14,7 +14,7 @@ interface Prestador {
   coords?: { latitude: number; longitude: number };
 }
 
-export default function DetalhesScreen() {
+function DetalhesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { id } = params;
@@ -117,6 +117,8 @@ export default function DetalhesScreen() {
     </SafeAreaView>
   );
 }
+
+export default DetalhesScreen;
 
 // Estilos da tela (sem alterações)
 const styles = StyleSheet.create({

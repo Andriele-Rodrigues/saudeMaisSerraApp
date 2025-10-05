@@ -49,11 +49,17 @@ export const PRESTADORES = [
   },]
 // Lista de médicos para a tela de Agendamento -> Selecionar Médico
 export const MEDICOS = [
-    { id: '1', nome: 'Dr. Carlos Silva', especialidade: 'Clínico Geral', inicial: 'CS' },
-    { id: '2', nome: 'Dra. Ana Souza', especialidade: 'Cardiologista', inicial: 'AS' },
-    { id: '3', nome: 'Dr. João Mendes', especialidade: 'Dermatologista', inicial: 'JM' },
-    { id: '4', nome: 'Dr. Pedro Oliveira', especialidade: 'Ortopedista', inicial: 'PO' },
-];
+    {
+      id: '1',
+      nome: 'Dr. Carlos Silva',
+      especialidade: 'Clínico Geral',
+      inicial: 'CS',
+      // Adicione os campos abaixo
+      endereco: 'Avenida Rio Branco, 456, Caxias do Sul',
+      telefone: '(54) 3222-8899',
+      foto: 'https://placehold.co/100x100/00A896/FFFFFF/png?text=CS'
+    },
+  ];
 
 // Lista de horários para a tela de Agendamento -> Selecionar Horário
 export const HORARIOS = [

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import React, { useState } from 'react';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Componente reutilizável para cada campo do filtro
@@ -14,30 +14,58 @@ const FilterInput = ({ label, value, onPress }: { label: string; value: string; 
   </View>
 );
 
+
 export default function GuiaMedicoFiltroScreen() {
-  // Estados para guardar os valores selecionados nos filtros
+  const router = useRouter(); // Hook para navegar
+  const params = useLocalSearchParams(); // Hook para receber dados de volta
+
+  // Estados para guardar os valores selecionados
   const [plano, setPlano] = useState('Todos');
   const [regiao, setRegiao] = useState('Serra');
-  const [especialidade, setEspecialidade] = useState('Raio X');
+  const [prestador, setPrestador] = useState('Todos');
+  const [especialidade, setEspecialidade] = useState('Todas');
 
-  // Em um app real, ao clicar em um filtro, você abriria um Modal com as opções
-  const handleSelectPlano = () => alert('Abriria seleção de Planos');
-  const handleSelectRegiao = () => alert('Abriria seleção de Região');
-  const handleSelectEspecialidade = () => alert('Abriria seleção de Especialidade');
+  // Este "efeito" escuta as mudanças nos parâmetros da rota.
+  // Quando um valor é selecionado e você volta, ele atualiza o campo.
+  useEffect(() => {
+    if (params.prestadorSelecionado) {
+      setPrestador(
+        Array.isArray(params.prestadorSelecionado)
+          ? params.prestadorSelecionado[0]
+          : params.prestadorSelecionado
+      );
+    }
+    if (params.especialidadeSelecionada) {
+      setEspecialidade(
+        Array.isArray(params.especialidadeSelecionada)
+          ? params.especialidadeSelecionada[0]
+          : params.especialidadeSelecionada
+      );
+    }
+  }, [params]);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <FilterInput label="Plano" value={plano} onPress={handleSelectPlano} />
-        <FilterInput label="Região" value={regiao} onPress={handleSelectRegiao} />
-        <FilterInput label="Prestador" value="Todos" onPress={() => {}} />
-        <FilterInput label="Especialidade" value={especialidade} onPress={handleSelectEspecialidade} />
+        <FilterInput label="Plano" value={plano} onPress={() => alert('Abrir seleção de Planos')} />
+        <FilterInput label="Região" value={regiao} onPress={() => alert('Abrir seleção de Região')} />
+        
+        {/* CORREÇÃO AQUI: onPress agora navega para a tela de seleção */}
+        <FilterInput 
+          label="Prestador" 
+          value={prestador} 
+          onPress={() => router.push('/guia-medico/prestadores')} 
+        />
+        <FilterInput 
+          label="Especialidade" 
+          value={especialidade} 
+          onPress={() => router.push('/guia-medico/especialidades')} 
+        />
 
-        {/* O Link navega para a tela de resultados, passando os filtros como parâmetros */}
         <Link
           href={{
             pathname: '/guia-medico/resultados',
-            params: { plano, regiao, especialidade },
+            params: { plano, regiao, prestador, especialidade },
           }}
           asChild
         >
@@ -59,12 +87,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#555',
     marginBottom: 8,
+    paddingLeft: 4,
   },
   input: {
     flexDirection: 'row',
@@ -73,19 +102,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f2f5',
     borderRadius: 8,
     paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
   },
   inputText: {
     fontSize: 16,
+    color: '#333',
   },
   searchButton: {
     backgroundColor: '#00A896',
     borderRadius: 8,
     paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 25,
   },
   searchButtonText: {
     color: '#fff',

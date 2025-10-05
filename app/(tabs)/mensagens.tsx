@@ -1,15 +1,14 @@
-
 import { Stack } from 'expo-router';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function FavoritosScreen() {
+export default function MensagensScreen() {
   return (
     <View style={styles.container}>
-      {/* Configura o título do cabeçalho da tela */}
-      <Stack.Screen options={{ title: 'Meus Favoritos' }} />
+      <Stack.Screen options={{ title: 'Mensagens' }} />
 
-      <Text style={styles.title}>Tela de Favoritos</Text>
-      <Text style={styles.subtitle}>Aqui você poderá ver seus médicos e clínicas salvos.</Text>
+      <Text style={styles.title}>Tela de Mensagens</Text>
+      <Text style={styles.subtitle}>Suas conversas e comunicados estarão nesta área.</Text>
     </View>
   );
 }

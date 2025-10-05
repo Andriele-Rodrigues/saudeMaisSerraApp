@@ -15,7 +15,7 @@ const ActionButton = ({ iconName, label, href }: { iconName: string; label: stri
 );
 
 // A tela principal agora é só a tela de Início
-const HomeScreen = () => {
+export default function IndexScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#008584" />
@@ -32,16 +32,16 @@ const HomeScreen = () => {
           </View>
 
           {/* O botão "Guia Médico" agora navega para a rota /guia-medico */}
-          <Link href="/(tabs)/guia-medico" asChild>
+          <Link href="/guia-medico" asChild>
             <TouchableOpacity style={styles.guideButton}>
               <Text style={styles.guideButtonText}>Guia Médico</Text>
             </TouchableOpacity>
           </Link>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="pill" label="Medicação" href="/medicacao" />
-            <ActionButton iconName="clipboard-text-outline" label="Exames" href="/exames" />
-            <ActionButton iconName="human-wheelchair" label="Sintomas" href="/sintomas" />
+            <ActionButton iconName="pill" label="Medicação" href="/(tabs)/medicacao" />
+            <ActionButton iconName="clipboard-text-outline" label="Exames" href="/(tabs)/exames" />
+            <ActionButton iconName="human-wheelchair" label="Sintomas" href="/(tabs)/sintomas" />
           </View>
 
           <View style={styles.bannerContainer}>
@@ -49,9 +49,9 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.actionGrid}>
-            <ActionButton iconName="star-outline" label="Favoritos" href="/favoritos" />
-            <ActionButton iconName="bell-outline" label="Notificação" href="/notificacoes" />
-            <ActionButton iconName="message-outline" label="Mensagens" href="/mensagens" />
+            <ActionButton iconName="star-outline" label="Favoritos" href="/(tabs)/favoritos" />
+            <ActionButton iconName="bell-outline" label="Notificação" href="/(tabs)/notificacoes" />
+            <ActionButton iconName="message-outline" label="Mensagens" href="/(tabs)/mensagens" />
           </View>
         </View>
       </ScrollView>
@@ -150,4 +150,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;

@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   return (
+    
     <Tabs
       screenOptions={{
         headerShown: false, // Esconde o cabeçalho padrão
@@ -47,6 +48,49 @@ export default function TabLayout() {
           ),
         }}
       />
+       <Tabs.Screen
+        name="medicacao" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="favoritos" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="guia-medico" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="exames" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="mensagens" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="notificacoes" 
+        options={{
+          href: null, 
+        }}
+      />
+       <Tabs.Screen
+        name="sintomas" 
+        options={{
+          href: null, 
+        }}
+      />
     </Tabs>
+    
   );
 }

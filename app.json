@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "SaudeSerraApp0.1",
-    "slug": "SaudeSerraApp0.1",
+    "name": "SaudeMaisSerraApp",
+    "slug": "SaudeMaisSerraApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "saudeserraapp01",
+    "scheme": "SaudeMaisSerraApp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
