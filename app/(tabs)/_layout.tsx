@@ -1,10 +1,11 @@
+import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   return (
-    
+     <FavoritesProvider> 
     <Tabs
       screenOptions={{
         headerShown: false, // Esconde o cabeçalho padrão
@@ -91,6 +92,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </FavoritesProvider>
     
   );
 }

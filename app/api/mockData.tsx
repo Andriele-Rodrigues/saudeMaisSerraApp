@@ -4,7 +4,7 @@
 export type Prestador = {
   id: string;
   nome: string;
-  tipo: 'Clínica' | 'Hospital' | 'Laboratório';
+  tipo: 'Clínica' | 'Hospital' | 'Laboratório' | 'Médico';
   especialidades: string[]; // Prestadores agora têm a sua própria lista de especialidades
   endereco: string;
   telefone: string;

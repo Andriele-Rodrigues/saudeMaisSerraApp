@@ -1,9 +1,10 @@
 
+import { MEDICOS } from '@/app/api/mockData';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { MEDICOS } from '../api/mockData';
+
 
 
 // Dados de exemplo, substitua por sua lógica real se necessário
