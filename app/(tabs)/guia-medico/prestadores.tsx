@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
@@ -18,11 +18,16 @@ const tiposDePrestador: Prestador[] = [
 
 export default function SelecionarPrestadorScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams(); // ✅ mantém filtros anteriores
 
-  // Função chamada ao selecionar um item
   const handleSelect = (item: Prestador) => {
-    // Volta para a tela anterior (index), passando o valor selecionado como parâmetro
-    router.replace({ pathname: '/guia-medico', params: { prestadorSelecionado: item.nome } });
+    router.replace({
+      pathname: '/guia-medico',
+      params: {
+        ...params,
+        prestadorSelecionado: item.nome,
+      },
+    });
   };
 
   const renderItem = ({ item }: { item: Prestador }) => (
