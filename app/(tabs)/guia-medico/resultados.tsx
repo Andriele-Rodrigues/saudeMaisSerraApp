@@ -1,25 +1,33 @@
-import { MEDICOS, PRESTADORES } from '@/app/api/mockData'; // Certifique-se que este caminho está correto
+import { MEDICOS, PRESTADORES } from '@/app/api/mockData';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Linking, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  Linking,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-// --- DEFINIÇÃO DE TIPO ATUALIZADA ---
-type Provider = {
+
+// Tipagem unificada
+interface Provider {
   id: string;
   nome: string;
   especialidade: string;
   tipo: 'Clínica' | 'Médico';
   endereco?: string;
   telefone?: string;
-};
+}
 
-// --- NOVO COMPONENTE DE CARD ---
 const ProviderCard = ({ item }: { item: Provider }) => {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Funções para os ícones
   const handleCall = (phoneNumber?: string) => {
     if (phoneNumber) Linking.openURL(`tel:${phoneNumber}`);
     else Alert.alert("Telefone não disponível");
@@ -35,7 +43,21 @@ const ProviderCard = ({ item }: { item: Provider }) => {
   };
 
   const handleSchedule = (providerId: string) => {
-    router.push({ pathname: '/guia-medico/agendar-consulta', params: { medicoId: providerId } });
+    router.push({ pathname: '/(tabs)/guia-medico/agendar-consulta', params: { medicoId: providerId } });
+  };
+
+  const handleDetails = (provider: Provider) => {
+    if (provider.tipo === 'Clínica') {
+      router.push({
+        pathname: '/(tabs)/guia-medico/equipe',
+        params: { endereco: provider.endereco || '' }
+      });
+    } else {
+      router.push({
+        pathname: '/(tabs)/guia-medico/detalhes',
+        params: { id: provider.id }
+      });
+    }
   };
 
   const toggleFavorite = () => {
@@ -50,7 +72,7 @@ const ProviderCard = ({ item }: { item: Provider }) => {
         <Text style={styles.cardSubtitle}>{item.especialidade}</Text>
         {item.endereco && <Text style={styles.cardText}>{item.endereco}</Text>}
       </View>
-      
+
       <View style={styles.iconContainer}>
         {item.tipo === 'Médico' ? (
           <>
@@ -67,13 +89,16 @@ const ProviderCard = ({ item }: { item: Provider }) => {
               <Ionicons name="calendar" size={26} color="#00A896" />
             </TouchableOpacity>
           </>
-        ) : ( // Para Clínicas, exibe apenas favoritar e ligar
+        ) : (
           <>
             <TouchableOpacity onPress={toggleFavorite} style={styles.iconButton}>
               <Ionicons name={isFavorite ? "star" : "star-outline"} size={28} color="#FFD700" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleCall(item.telefone)} style={styles.iconButton}>
               <Ionicons name="call" size={26} color="#00A896" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDetails(item)} style={styles.iconButton}>
+              <Ionicons name="information-circle" size={26} color="#00A896" />
             </TouchableOpacity>
           </>
         )}
@@ -82,7 +107,6 @@ const ProviderCard = ({ item }: { item: Provider }) => {
   );
 };
 
-
 export default function ResultadosScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -90,22 +114,31 @@ export default function ResultadosScreen() {
 
   useEffect(() => {
     const allProviders: Provider[] = [
-      ...PRESTADORES.map((p): Provider => ({...p, tipo: 'Clínica'})),
-      ...MEDICOS.map((m): Provider => ({...m, tipo: 'Médico'}))
+      ...PRESTADORES.map((p): Provider => ({ ...p, tipo: 'Clínica' })),
+      ...MEDICOS.map((m): Provider => ({ ...m, tipo: 'Médico' }))
     ];
     let results = allProviders;
 
     if (params.prestador && params.prestador !== 'Todos') {
-      results = results.filter(
-        (provider) => provider.tipo.toLowerCase() === String(params.prestador).toLowerCase()
-      );
+      const prestadorFiltro = String(params.prestador)
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      results = results.filter((provider) => {
+        const tipoNormalizado = provider.tipo
+          .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        return tipoNormalizado === prestadorFiltro;
+      });
     }
-    if (params.especialidade && params.especialidade !== 'Todos') {
-      const especialidadeQuery = String(params.especialidade).toLowerCase();
-      results = results.filter(
-        (provider) => provider.especialidade.toLowerCase().includes(especialidadeQuery)
-      );
+
+    if (params.especialidade && params.especialidade !== 'Todas') {
+      const especialidadeQuery = String(params.especialidade)
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      results = results.filter((provider) => {
+        const especialidadeNormalizada = provider.especialidade
+          .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        return especialidadeNormalizada.includes(especialidadeQuery);
+      });
     }
+
     setFilteredResults(results);
   }, [params]);
 
@@ -119,15 +152,17 @@ export default function ResultadosScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-          <Text style={styles.backButtonText}>Voltar para Filtros</Text>
-        </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="#333" />
+        <Text style={styles.backButtonText}>Voltar para Filtros</Text>
+      </TouchableOpacity>
+
       <View style={styles.filterInfo}>
         <Text style={styles.filterText}>
           Exibindo resultados para: <Text style={{ fontWeight: 'bold' }}>{params.prestador}</Text> em <Text style={{ fontWeight: 'bold' }}>{params.especialidade}</Text>
         </Text>
       </View>
+
       <FlatList
         data={filteredResults}
         keyExtractor={(item) => item.id}
@@ -143,12 +178,23 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },
   backButton: { flexDirection: 'row', alignItems: 'center', padding: 15 },
   backButtonText: { fontSize: 16, marginLeft: 8, color: '#333' },
-  filterInfo: { padding: 15, backgroundColor: '#e9ecef', borderBottomWidth: 1, borderColor: '#dee2e6' },
+  filterInfo: {
+    padding: 15,
+    backgroundColor: '#e9ecef',
+    borderBottomWidth: 1,
+    borderColor: '#dee2e6'
+  },
   filterText: { fontSize: 14, color: '#495057' },
   card: {
-    backgroundColor: '#fff', borderRadius: 8, padding: 15, marginTop: 15,
-    elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2, shadowRadius: 1.41,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 15,
+    marginTop: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41
   },
   cardContent: { flex: 1 },
   cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
@@ -160,12 +206,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#eee',
     paddingTop: 10,
-    marginTop: 10,
+    marginTop: 10
   },
   iconButton: {
-    marginLeft: 20,
+    marginLeft: 20
   },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100
+  },
   emptyText: { fontSize: 18, fontWeight: 'bold', color: '#888', marginTop: 10 },
   emptySubtext: { fontSize: 14, color: '#aaa', marginTop: 5 }
 });
