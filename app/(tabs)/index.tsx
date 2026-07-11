@@ -1,6 +1,6 @@
 import { Href, Link } from 'expo-router'; // 👈 IMPORTANTE: Importe o Link
 import React from 'react';
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // O ActionButton continua igual
@@ -21,7 +21,10 @@ export default function IndexScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#008584" />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Saúde Mais Serra</Text>
+          <Image 
+            source={require('./assets/images/logo.png')}  // Substitua pelo caminho correto da sua logo
+            style={styles.logoImage}
+          />
         </View>
 
         <View style={styles.body}>
@@ -44,9 +47,14 @@ export default function IndexScreen() {
             <ActionButton iconName="human-wheelchair" label="Sintomas" href="/(tabs)/sintomas" />
           </View>
 
-          <View style={styles.bannerContainer}>
-             {/* Você pode colocar um <Image /> aqui */}
+         
+             <View style={styles.bannerContainer}>
+            <Image 
+              source={require('./assets/images/banner.png')}  // Substitua pelo caminho correto da sua imagem
+              style={styles.bannerImage}
+            />
           </View>
+          
 
           <View style={styles.actionGrid}>
             <ActionButton iconName="star-outline" label="Favoritos" href="/(tabs)/favoritos" />
@@ -69,15 +77,15 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  logoImage: {
+    width: 250,  
+    height: 250,
+    resizeMode: 'contain', // Ajusta a logo para se manter proporcional
+  },
   header: {
     backgroundColor: '#008584',
-    paddingTop: 20,
-    paddingBottom: 60,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    flexDirection: 'row',
     alignItems: 'center',
+    height: 150,
     justifyContent: 'center',
   },
   headerText: {
@@ -86,7 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   body: {
-    marginTop: -40,
+    marginTop: -20,
     paddingHorizontal: 20,
   },
   searchContainer: {
@@ -94,7 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     borderRadius: 25,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -141,12 +149,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   bannerContainer: {
-    height: 100,
-    backgroundColor: '#ccc', // Apenas para visualização
+    height: 200,  // Ajuste o tamanho conforme necessário
+    marginBottom: 20,
     borderRadius: 10,
     overflow: 'hidden',
-    marginBottom: 20,
     elevation: 2,
   },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover', // Ajusta a imagem para cobrir a área
+  },
 });
-
