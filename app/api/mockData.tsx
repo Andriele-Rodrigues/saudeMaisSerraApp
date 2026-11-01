@@ -1,6 +1,12 @@
 // --- TIPOS PARA OS DADOS FALSOS ---
 // A definição de tipos garante que todos os seus dados sigam a mesma estrutura, evitando erros.
 
+export type MembroEquipe = {
+  id: string;
+  nome: string;
+  especialidade: string;
+};
+
 export type Prestador = {
   id: string;
   nome: string;
@@ -9,6 +15,7 @@ export type Prestador = {
   endereco: string;
   telefone: string;
   coords: { latitude: number; longitude: number };
+  equipe?: MembroEquipe[]; // Equipe médica que atende no local
 };
 
 export type Medico = {
@@ -140,6 +147,19 @@ export const MEDICOS: Medico[] = [
     telefone: '(54) 99888-7777',
   },
 ];
+
+
+// Monta a equipe de cada prestador a partir dos médicos que atendem no local,
+// para que a lista de equipe médica tenha uma única fonte de verdade.
+PRESTADORES.forEach(prestador => {
+  prestador.equipe = MEDICOS
+    .filter(medico => medico.locaisAtendimentoIds.includes(prestador.id))
+    .map(medico => ({
+      id: medico.id,
+      nome: medico.nome,
+      especialidade: medico.especialidades[0],
+    }));
+});
 
 
 // Lista de horários para a tela de Agendamento
