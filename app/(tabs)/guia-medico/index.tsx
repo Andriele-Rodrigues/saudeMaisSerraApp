@@ -34,7 +34,6 @@ export default function GuiaMedicoFiltroScreen() {
 
   // Atualiza apenas os filtros que forem recebidos nos parâmetros
   useEffect(() => {
-<<<<<<< HEAD
     const prestadorParam = params.prestadorSelecionado;
     if (typeof prestadorParam === 'string') {
       setPrestador(prestadorParam);
@@ -47,20 +46,6 @@ export default function GuiaMedicoFiltroScreen() {
       setEspecialidade(especialidadeParam);
     } else if (Array.isArray(especialidadeParam)) {
       setEspecialidade(especialidadeParam[0]);
-=======
-    if ('prestadorSelecionado' in params && params.prestadorSelecionado) {
-      const valor = Array.isArray(params.prestadorSelecionado)
-        ? params.prestadorSelecionado[0]
-        : params.prestadorSelecionado;
-      setPrestador(valor);
-    }
-
-    if ('especialidadeSelecionada' in params && params.especialidadeSelecionada) {
-      const valor = Array.isArray(params.especialidadeSelecionada)
-        ? params.especialidadeSelecionada[0]
-        : params.especialidadeSelecionada;
-      setEspecialidade(valor);
->>>>>>> feat/equipe-medica
     }
   }, [params]);
 
@@ -69,31 +54,24 @@ export default function GuiaMedicoFiltroScreen() {
       <View style={styles.content}>
         <FilterInput label="Plano" value={plano} onPress={() => alert('Abrir seleção de Planos')} />
         <FilterInput label="Região" value={regiao} onPress={() => alert('Abrir seleção de Região')} />
-<<<<<<< HEAD
-        
+
         {/* Passamos os outros filtros como parâmetros para que não se percam */}
-        <FilterInput 
-          label="Prestador" 
-          value={prestador} 
+        <FilterInput
+          label="Prestador"
+          value={prestador}
           onPress={() => router.push({
             pathname: '/guia-medico/selecionar-prestador',
             params: { especialidadeAtual: especialidade },
           })}
         />
-        <FilterInput 
-          label="Especialidade" 
-          value={especialidade} 
+        <FilterInput
+          label="Especialidade"
+          value={especialidade}
           onPress={() => router.push({
             pathname: '/guia-medico/selecionar-especialidade',
             params: { prestadorAtual: prestador },
           })}
         />
-=======
-
-        {/* Agora mantém os valores anteriores ao navegar */}
-        <FilterInput label="Prestador" value={prestador} onPress={() => router.push('/guia-medico/prestadores')} />
-        <FilterInput label="Especialidade" value={especialidade} onPress={() => router.push('/guia-medico/especialidades')} />
->>>>>>> feat/equipe-medica
 
         <Link
           href={{
