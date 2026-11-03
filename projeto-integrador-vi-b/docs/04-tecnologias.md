@@ -91,14 +91,3 @@ Relação das tecnologias utilizadas na construção do aplicativo, com os respe
 
 ---
 
-## Dependências a serem removidas
-
-O projeto herdado do Projeto Integrador IV-A inclui bibliotecas de servidor e de interface web que não têm uso no VI-B, já que o aplicativo passa a operar com banco local e sem API:
-
-| Biblioteca | Motivo da remoção |
-|---|---|
-| `express`, `cors` | Serviam uma API HTTP; substituída pelo banco local |
-| `axios` | Cliente HTTP sem uso após a remoção da API |
-| `@mui/material`, `@emotion/react`, `@emotion/styled` | Biblioteca de componentes voltada à web |
-| `@radix-ui/react-dialog` | Componente de diálogo voltado à web |
-| `react-navigation` 4, `react-navigation-stack` | Versões antigas, substituídas pelo React Navigation 7 |
