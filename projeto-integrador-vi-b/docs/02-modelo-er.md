@@ -2,9 +2,11 @@
 
 [← Voltar ao índice](../README.md)
 
-Banco: **SQLite 3**, embarcado no aplicativo, arquivo `saude_serra.db` no diretório privado do app.
+**Banco de dados:** SQLite 3, embarcado no aplicativo, com arquivo `saude_serra.db` armazenado no diretório privado do app.
 
-> **Nota sobre tipagem.** O SQLite trabalha com afinidade de tipos, e não com tipos rígidos. Não existem `UUID`, `TIMESTAMPTZ`, `BOOLEAN` ou `VARCHAR(n)` com validação de tamanho. O modelo abaixo já está expresso nos tipos reais do SQLite: `INTEGER`, `TEXT`, `REAL` e `NUMERIC`. Datas são gravadas como `TEXT` no formato ISO-8601 (`YYYY-MM-DD HH:MM:SS`) e valores lógicos como `INTEGER` 0/1, que são as convenções recomendadas pela própria documentação do SQLite.
+> **Nota sobre tipagem.** O SQLite utiliza afinidades de tipos. Neste modelo, são usados `INTEGER`, `TEXT`, `REAL` e `NUMERIC`. Datas e horários são armazenados como `TEXT` em formato consistente `YYYY-MM-DD HH:MM:SS`; valores lógicos são representados por `INTEGER` (`0` ou `1`). O formato de datas indicado é uma representação textual compatível com as funções de data e hora do SQLite, sem informação de fuso horário. O aplicativo deve adotar uma convenção de fuso consistente.
+>
+> **Integridade referencial.** A aplicação deve habilitar `PRAGMA foreign_keys = ON` em cada conexão SQLite para aplicar as restrições de chave estrangeira e suas ações de exclusão.
 
 ---
 
@@ -14,10 +16,10 @@ Banco: **SQLite 3**, embarcado no aplicativo, arquivo `saude_serra.db` no diret�
 erDiagram
     PACIENTE ||--o{ AGENDAMENTO : "realiza"
     PRESTADOR ||--o{ AGENDAMENTO : "atende"
-    ESTABELECIMENTO ||--o{ AGENDAMENTO : "sedia"
+    ESTABELECIMENTO |o--o{ AGENDAMENTO : "sedia"
     ESPECIALIDADE ||--o{ PRESTADOR : "classifica"
-    PRESTADOR ||--o{ PRESTADOR_ESTABELECIMENTO : ""
-    ESTABELECIMENTO ||--o{ PRESTADOR_ESTABELECIMENTO : ""
+    PRESTADOR ||--o{ PRESTADOR_ESTABELECIMENTO : "atua em"
+    ESTABELECIMENTO ||--o{ PRESTADOR_ESTABELECIMENTO : "possui"
     AGENDAMENTO ||--o| AVALIACAO : "gera"
     PACIENTE ||--o{ AVALIACAO : "escreve"
     PRESTADOR ||--o{ AVALIACAO : "recebe"
@@ -44,6 +46,7 @@ erDiagram
         TEXT codigo_cnes UK
         TEXT cidade
         TEXT bairro
+        TEXT endereco
         TEXT telefone
         REAL latitude
         REAL longitude
@@ -87,6 +90,8 @@ erDiagram
     }
 ```
 
+> **Leitura das cardinalidades:** um agendamento deve ter exatamente um paciente e um prestador; pode ter zero ou um estabelecimento (por exemplo, em teleconsulta). Um agendamento pode gerar no máximo uma avaliação. A associação entre prestadores e estabelecimentos é N:N, resolvida pela tabela intermediária.
+
 ---
 
 ## Detalhamento das tabelas
@@ -103,8 +108,6 @@ erDiagram
 | `cidade` | TEXT | — |
 | `criado_em` | TEXT | NOT NULL, DEFAULT `datetime('now','localtime')` |
 
----
-
 ### `especialidade` — especialidades médicas
 
 | Coluna | Tipo | Restrição |
@@ -114,15 +117,13 @@ erDiagram
 | `descricao` | TEXT | — |
 | `icone` | TEXT | — |
 
----
-
 ### `estabelecimento` — clínicas, hospitais e laboratórios
 
 | Coluna | Tipo | Restrição |
 |---|---|---|
 | `id_estabelecimento` | INTEGER | PK, AUTOINCREMENT |
 | `nome_fantasia` | TEXT | NOT NULL |
-| `tipo` | TEXT | NOT NULL, CHECK IN ('clinica','hospital','laboratorio','consultorio') |
+| `tipo` | TEXT | NOT NULL, CHECK (`tipo` IN ('clinica','hospital','laboratorio','consultorio')) |
 | `codigo_cnes` | TEXT | UNIQUE |
 | `cidade` | TEXT | NOT NULL |
 | `bairro` | TEXT | — |
@@ -130,9 +131,7 @@ erDiagram
 | `telefone` | TEXT | — |
 | `latitude` | REAL | — |
 | `longitude` | REAL | — |
-| `ativo` | INTEGER | NOT NULL, DEFAULT 1, CHECK IN (0,1) |
-
----
+| `ativo` | INTEGER | NOT NULL, DEFAULT 1, CHECK (`ativo` IN (0,1)) |
 
 ### `prestador` — profissionais de saúde
 
@@ -143,23 +142,21 @@ erDiagram
 | `nome_completo` | TEXT | NOT NULL |
 | `registro_profissional` | TEXT | UNIQUE |
 | `biografia` | TEXT | — |
-| `media_avaliacao` | NUMERIC | DEFAULT 0, CHECK BETWEEN 0 AND 5 |
+| `media_avaliacao` | NUMERIC | DEFAULT 0, CHECK (`media_avaliacao` BETWEEN 0 AND 5) |
 | `qtd_avaliacoes` | INTEGER | NOT NULL, DEFAULT 0 |
-| `ativo` | INTEGER | NOT NULL, DEFAULT 1, CHECK IN (0,1) |
-
----
+| `ativo` | INTEGER | NOT NULL, DEFAULT 1, CHECK (`ativo` IN (0,1)) |
 
 ### `prestador_estabelecimento` — tabela associativa (N:N)
 
-Um profissional pode atender em vários locais e um local reúne vários profissionais.
+Um profissional pode atender em vários estabelecimentos, e um estabelecimento pode reunir vários profissionais.
 
 | Coluna | Tipo | Restrição |
 |---|---|---|
 | `id_prestador` | INTEGER | PK composta, FK → `prestador(id_prestador)` ON DELETE CASCADE |
 | `id_estabelecimento` | INTEGER | PK composta, FK → `estabelecimento(id_estabelecimento)` ON DELETE CASCADE |
-| `modalidade` | TEXT | NOT NULL, DEFAULT 'presencial', CHECK IN ('presencial','teleconsulta') |
+| `modalidade` | TEXT | NOT NULL, DEFAULT 'presencial', CHECK (`modalidade` IN ('presencial','teleconsulta')) |
 
----
+**Chave primária composta:** (`id_prestador`, `id_estabelecimento`), impedindo duplicar o mesmo vínculo.
 
 ### `agendamento` — consultas e exames marcados
 
@@ -169,16 +166,14 @@ Um profissional pode atender em vários locais e um local reúne vários profiss
 | `id_paciente` | INTEGER | NOT NULL, FK → `paciente(id_paciente)` ON DELETE CASCADE |
 | `id_prestador` | INTEGER | NOT NULL, FK → `prestador(id_prestador)` ON DELETE RESTRICT |
 | `id_estabelecimento` | INTEGER | FK → `estabelecimento(id_estabelecimento)` ON DELETE SET NULL |
-| `tipo` | TEXT | NOT NULL, CHECK IN ('consulta','exame') |
-| `inicio` | TEXT | NOT NULL (ISO-8601) |
+| `tipo` | TEXT | NOT NULL, CHECK (`tipo` IN ('consulta','exame')) |
+| `inicio` | TEXT | NOT NULL (data/hora em formato consistente) |
 | `fim` | TEXT | NOT NULL, CHECK (`fim` > `inicio`) |
-| `status` | TEXT | NOT NULL, DEFAULT 'agendado', CHECK IN ('agendado','realizado','cancelado','faltou') |
+| `status` | TEXT | NOT NULL, DEFAULT 'agendado', CHECK (`status` IN ('agendado','realizado','cancelado','faltou')) |
 | `observacoes` | TEXT | — |
 | `criado_em` | TEXT | NOT NULL, DEFAULT `datetime('now','localtime')` |
 
-Restrição adicional: `UNIQUE (id_prestador, inicio)` — impede reservar o mesmo horário duas vezes para o mesmo profissional.
-
----
+**Restrição adicional:** `UNIQUE (id_prestador, inicio)` impede dois agendamentos do mesmo profissional com horário inicial idêntico. Essa restrição, isoladamente, **não impede sobreposição de intervalos**; isso requer validação adicional.
 
 ### `avaliacao` — notas e comentários
 
@@ -188,9 +183,11 @@ Restrição adicional: `UNIQUE (id_prestador, inicio)` — impede reservar o mes
 | `id_agendamento` | INTEGER | NOT NULL, UNIQUE, FK → `agendamento(id_agendamento)` ON DELETE CASCADE |
 | `id_paciente` | INTEGER | NOT NULL, FK → `paciente(id_paciente)` ON DELETE CASCADE |
 | `id_prestador` | INTEGER | NOT NULL, FK → `prestador(id_prestador)` ON DELETE CASCADE |
-| `nota` | INTEGER | NOT NULL, CHECK BETWEEN 1 AND 5 |
+| `nota` | INTEGER | NOT NULL, CHECK (`nota` BETWEEN 1 AND 5) |
 | `comentario` | TEXT | — |
 | `data_avaliacao` | TEXT | NOT NULL, DEFAULT `datetime('now','localtime')` |
+
+O campo `id_agendamento` é único para limitar cada atendimento a, no máximo, uma avaliação. Os campos `id_paciente` e `id_prestador` repetem informações disponíveis no agendamento e devem ser mantidos consistentes com ele.
 
 ---
 
@@ -198,11 +195,33 @@ Restrição adicional: `UNIQUE (id_prestador, inicio)` — impede reservar o mes
 
 | Relacionamento | Cardinalidade | Regra de negócio |
 |---|---|---|
-| `especialidade` → `prestador` | 1 : N | Todo prestador tem exatamente uma especialidade principal |
-| `prestador` ↔ `estabelecimento` | N : N | Resolvido por `prestador_estabelecimento` |
-| `paciente` → `agendamento` | 1 : N | Um paciente pode ter vários agendamentos |
-| `prestador` → `agendamento` | 1 : N | Um prestador atende vários agendamentos |
-| `estabelecimento` → `agendamento` | 1 : N | Opcional; teleconsulta não tem local físico |
-| `agendamento` → `avaliacao` | 1 : 0..1 | Cada atendimento admite no máximo uma avaliação |
+| `especialidade` → `prestador` | 1 : N | Todo prestador possui exatamente uma especialidade principal |
+| `prestador` → `prestador_estabelecimento` | 1 : N | Um prestador pode possuir vários vínculos com estabelecimentos |
+| `estabelecimento` → `prestador_estabelecimento` | 1 : N | Um estabelecimento pode possuir vários prestadores vinculados |
+| `prestador` ↔ `estabelecimento` | N : N | Relacionamento derivado da tabela associativa |
+| `paciente` → `agendamento` | 1 : N | Um paciente pode realizar vários agendamentos |
+| `prestador` → `agendamento` | 1 : N | Um prestador pode atender vários agendamentos |
+| `estabelecimento` → `agendamento` | 0..1 : N | Cada agendamento pode ter zero ou um estabelecimento; um estabelecimento pode sediar vários agendamentos |
+| `agendamento` → `avaliacao` | 1 : 0..1 | Cada agendamento admite no máximo uma avaliação |
+| `paciente` → `avaliacao` | 1 : N | Um paciente pode escrever várias avaliações |
+| `prestador` → `avaliacao` | 1 : N | Um prestador pode receber várias avaliações |
 
-**Atendimento aos requisitos da Etapa 1:** 7 tabelas (mínimo 4), todas com 3 ou mais colunas (a menor tem 3), e 8 relacionamentos por chave estrangeira entre tabelas (mínimo 1).
+Há **9 referências por chave estrangeira** (sem contar o relacionamento N:N derivado): 1 em `prestador`, 2 em `prestador_estabelecimento`, 3 em `agendamento` e 3 em `avaliacao`.
+
+---
+
+## Regras de negócio e validações adicionais
+
+As regras abaixo complementam as restrições declaradas nas tabelas. **Sua descrição não significa que já estejam implementadas**: devem ser verificadas no código do aplicativo ou implementadas por mecanismos apropriados no banco.
+
+1. **Vínculo entre profissional e estabelecimento.** Quando `id_estabelecimento` estiver preenchido em um agendamento, o par (`id_prestador`, `id_estabelecimento`) deve existir em `prestador_estabelecimento`. Como as colunas são mantidas separadamente e o estabelecimento pode ser nulo, o modelo atual não garante essa regra somente com as FKs individuais.
+2. **Modalidade de atendimento.** O campo `modalidade` da tabela associativa descreve o vínculo do prestador com um estabelecimento. O modelo atual não possui uma coluna específica de modalidade em `agendamento`. Portanto, a distinção entre atendimento presencial e teleconsulta e a obrigatoriedade do local físico devem ser validadas por regras do aplicativo. A ausência de estabelecimento não deve, por si só, ser considerada prova de teleconsulta.
+3. **Conflito de horários.** Para um mesmo prestador, não devem existir agendamentos ativos com intervalos sobrepostos. Para intervalos semiabertos, existe conflito quando `novo_inicio < fim_existente` e `novo_fim > inicio_existente`. A política de quais status bloqueiam a agenda deve ser definida pelo grupo; agendamentos cancelados normalmente não bloqueiam horários.
+4. **Avaliações válidas.** Uma avaliação deve ser permitida apenas para um agendamento com status `realizado`. `id_paciente` e `id_prestador` da avaliação devem corresponder aos do agendamento relacionado. Essa consistência não é garantida pelas FKs individuais.
+5. **Médias de avaliações.** `media_avaliacao` e `qtd_avaliacoes` em `prestador` são valores derivados das avaliações. Devem ser recalculados ou atualizados de modo consistente quando avaliações forem inseridas, alteradas ou excluídas. Recomenda-se também validar que `qtd_avaliacoes >= 0`.
+6. **Formato e comparação de datas.** A comparação textual de `fim > inicio` funciona cronologicamente somente se todos os horários forem armazenados em um formato padronizado e com a mesma convenção de fuso. É necessário validar o formato e a existência real das datas na aplicação.
+7. **Exclusões e histórico.** As ações `ON DELETE CASCADE`, `RESTRICT` e `SET NULL` estão documentadas nas tabelas. Antes de excluir registros de pacientes, estabelecimentos ou avaliações, o grupo deve considerar a necessidade de preservar o histórico de atendimentos e avaliações.
+
+---
+
+**Atendimento aos requisitos da Etapa 1:** o modelo contém **7 tabelas** (mínimo de 4), todas com **3 ou mais colunas**, e **9 referências por chave estrangeira** entre tabelas (mínimo de uma relação entre duas tabelas). Apresenta também os tipos de dados, chaves, restrições, cardinalidades e regras de negócio solicitados.
