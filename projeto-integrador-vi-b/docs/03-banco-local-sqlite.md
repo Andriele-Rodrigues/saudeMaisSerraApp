@@ -1,190 +1,209 @@
-# Banco de dados local: SQLite no aplicativo
+# Banco de Dados Local (SQLite)
 
-[← Voltar ao índice](../README.md)
+[Voltar ao índice](../README.md)
 
-## 1. Qual banco será usado e por quê
+## 1. Banco de dados escolhido
 
-O aplicativo usa **SQLite 3**, acessado pela biblioteca oficial **[expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/)**.
+Para atender ao requisito de funcionamento local e offline do aplicativo, escolhemos o **SQLite 3** utilizando a biblioteca oficial **[expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/)**.
 
-A escolha atende diretamente o requisito tecnológico obrigatório da disciplina — banco de dados local funcionando no próprio celular, mesmo sem conexão. Os motivos técnicos:
+Optamos por essa solução pelos seguintes pontos práticos do projeto:
 
-- O SQLite já faz parte do sistema operacional Android e iOS; não há servidor para instalar nem processo externo para manter.
-- A biblioteca `expo-sqlite` é mantida pela própria Expo e funciona tanto no *development build* quanto no APK final, sem código nativo escrito à mão.
-- Suporta SQL completo: chaves estrangeiras, `CHECK`, `UNIQUE`, índices, transações e funções de agregação — tudo o que o modelo ER do projeto exige, inclusive as consultas analíticas do painel de indicadores.
-- O arquivo do banco fica no diretório privado do aplicativo, isolado de outros apps e removido junto com a desinstalação.
+- O SQLite já vem nativo no Android e no iOS, então o banco roda direto no aparelho do usuário sem depender de internet ou de um servidor externo.
+- Como o nosso projeto usa Expo (SDK 54), o pacote `expo-sqlite` funciona direto no build do APK sem precisar configurar código nativo Android manualmente.
+- Ele dá suporte completo a chaves estrangeiras (`FOREIGN KEY`), validações (`CHECK`, `UNIQUE`), transações e consultas com agregação (`COUNT`, `AVG`, `GROUP BY`), que vamos usar na parte de análise de dados.
+- O arquivo do banco (`saude_serra.db`) fica salvo no diretório interno privado do app (gerenciado pelo `defaultDatabaseDirectory` do próprio `expo-sqlite`), sendo criado automaticamente na primeira vez que o usuário abre o aplicativo.
 
-**Localização do arquivo:** `FileSystem.documentDirectory + 'SQLite/saude_serra.db'`, criado automaticamente na primeira execução.
+## 2. Instalação no projeto
 
----
+Na base atual do repositório (vinda da etapa anterior), os dados ainda estão fixos em memória no arquivo `app/api/mockData.tsx` (`PRESTADORES`, `MEDICOS` e `ESPECIALIDADES`) e nos contextos `contexts/AppointmentsContext.tsx` e `contexts/FavoritesContext.tsx`.
 
-## 2. Instalação da dependência
-
-O projeto atual (herdado do Projeto Integrador IV-A) usa Expo SDK 54 e ainda não possui a biblioteca. A inclusão é feita com:
+Para instalar a biblioteca compatível com a versão do Expo do projeto, utilizamos:
 
 ```bash
 npx expo install expo-sqlite
 ```
 
-> O comando `npx expo install` é usado em vez de `npm install` porque ele resolve automaticamente a versão da biblioteca compatível com o SDK do projeto.
+## 3. Organização dos arquivos do banco
 
----
+Para não espalhar comandos SQL dentro das telas em `app/(tabs)/`, separamos toda a parte de banco de dados dentro da pasta `src/database/`:
 
-## 3. Arquitetura da camada de dados
-
-A implementação é organizada em quatro camadas, isolando o SQL do restante do aplicativo:
-
-```
+```text
 src/database/
-├── schema.ts        → comandos CREATE TABLE e CREATE INDEX
-├── migrations.ts    → controle de versão do banco (PRAGMA user_version)
-├── seed.ts          → carga inicial de dados do CNES
-└── repositories/    → funções de acesso por entidade
-    ├── pacienteRepository.ts
-    ├── prestadorRepository.ts
-    ├── agendamentoRepository.ts
-    ├── avaliacaoRepository.ts
-    └── indicadoresRepository.ts
+  schema.ts                 // criação das tabelas, índices e triggers
+  migrations.ts             // controle de versão do banco ao abrir o app
+  seed.ts                   // inserção dos dados iniciais (CNES e prestadores)
+  repositories/
+    pacienteRepository.ts
+    prestadorRepository.ts
+    agendamentoRepository.ts
+    avaliacaoRepository.ts
+    indicadoresRepository.ts
 ```
 
-As telas (`app/(tabs)/...`) **nunca escrevem SQL diretamente**: elas chamam funções dos *repositories*. Isso substitui o arquivo `app/api/mockData` usado na versão anterior do aplicativo, em que os dados eram fixos em memória.
+Com essa divisão, as telas e os contextos apenas chamam as funções dos arquivos em `repositories/`, substituindo as listas estáticas que hoje estão no `mockData.tsx`.
 
----
+## 4. Estrutura e criação das tabelas
 
-## 4. Criação das tabelas
-
-O esquema é criado uma única vez, na primeira abertura do aplicativo. O `SQLiteProvider` do `expo-sqlite` expõe um gancho `onInit` que roda antes de qualquer tela montar:
+A inicialização do banco acontece no `app/_layout.tsx` usando o componente `SQLiteProvider` do `expo-sqlite`. O parâmetro `onInit` garante que as tabelas sejam criadas antes de carregar as telas:
 
 ```tsx
 // app/_layout.tsx
+import { Stack } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
-import { migrateDbIfNeeded } from '@/src/database/migrations';
+import React from 'react';
+import { AppointmentsProvider } from '../contexts/AppointmentsContext';
+import { migrateDbIfNeeded } from '../src/database/migrations';
 
 export default function RootLayout() {
   return (
     <SQLiteProvider databaseName="saude_serra.db" onInit={migrateDbIfNeeded}>
-      {/* navegação do expo-router */}
+      <AppointmentsProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="guia-medico" options={{ headerShown: false }} />
+        </Stack>
+      </AppointmentsProvider>
     </SQLiteProvider>
   );
 }
 ```
 
-O script de criação, em `schema.ts`:
+Abaixo está o script SQL definido em `src/database/schema.ts`, seguindo a modelagem definida no [Modelo ER](02-modelo-er.md):
 
 ```sql
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS paciente (
-  id_paciente    INTEGER PRIMARY KEY AUTOINCREMENT,
-  nome_completo  TEXT NOT NULL,
-  email          TEXT NOT NULL UNIQUE,
-  cpf            TEXT UNIQUE,
-  telefone       TEXT,
-  cidade         TEXT,
-  criado_em      TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  id_paciente INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome_completo TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  cpf TEXT UNIQUE,
+  telefone TEXT,
+  cidade TEXT,
+  criado_em TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 
 CREATE TABLE IF NOT EXISTS especialidade (
   id_especialidade INTEGER PRIMARY KEY AUTOINCREMENT,
-  nome             TEXT NOT NULL UNIQUE,
-  descricao        TEXT,
-  icone            TEXT
+  nome TEXT NOT NULL UNIQUE,
+  descricao TEXT,
+  icone TEXT
 );
 
 CREATE TABLE IF NOT EXISTS estabelecimento (
   id_estabelecimento INTEGER PRIMARY KEY AUTOINCREMENT,
-  nome_fantasia      TEXT NOT NULL,
-  tipo               TEXT NOT NULL
-                     CHECK (tipo IN ('clinica','hospital','laboratorio','consultorio')),
-  codigo_cnes        TEXT UNIQUE,
-  cidade             TEXT NOT NULL,
-  bairro             TEXT,
-  endereco           TEXT,
-  telefone           TEXT,
-  latitude           REAL,
-  longitude          REAL,
-  ativo              INTEGER NOT NULL DEFAULT 1 CHECK (ativo IN (0,1))
+  nome_fantasia TEXT NOT NULL,
+  tipo TEXT NOT NULL CHECK (tipo IN ('clinica','hospital','laboratorio','consultorio')),
+  codigo_cnes TEXT UNIQUE,
+  cidade TEXT NOT NULL,
+  bairro TEXT,
+  endereco TEXT,
+  telefone TEXT,
+  latitude REAL,
+  longitude REAL,
+  ativo INTEGER NOT NULL DEFAULT 1 CHECK (ativo IN (0,1))
 );
 
 CREATE TABLE IF NOT EXISTS prestador (
-  id_prestador          INTEGER PRIMARY KEY AUTOINCREMENT,
-  id_especialidade      INTEGER NOT NULL,
-  nome_completo         TEXT NOT NULL,
+  id_prestador INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_especialidade INTEGER NOT NULL,
+  nome_completo TEXT NOT NULL,
   registro_profissional TEXT UNIQUE,
-  biografia             TEXT,
-  media_avaliacao       NUMERIC DEFAULT 0 CHECK (media_avaliacao BETWEEN 0 AND 5),
-  qtd_avaliacoes        INTEGER NOT NULL DEFAULT 0,
-  ativo                 INTEGER NOT NULL DEFAULT 1 CHECK (ativo IN (0,1)),
-  FOREIGN KEY (id_especialidade)
-    REFERENCES especialidade (id_especialidade) ON DELETE RESTRICT
+  biografia TEXT,
+  media_avaliacao NUMERIC DEFAULT 0 CHECK (media_avaliacao BETWEEN 0 AND 5),
+  qtd_avaliacoes INTEGER NOT NULL DEFAULT 0,
+  ativo INTEGER NOT NULL DEFAULT 1 CHECK (ativo IN (0,1)),
+  FOREIGN KEY (id_especialidade) REFERENCES especialidade (id_especialidade) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS prestador_estabelecimento (
-  id_prestador       INTEGER NOT NULL,
+  id_prestador INTEGER NOT NULL,
   id_estabelecimento INTEGER NOT NULL,
-  modalidade         TEXT NOT NULL DEFAULT 'presencial'
-                     CHECK (modalidade IN ('presencial','teleconsulta')),
+  modalidade TEXT NOT NULL DEFAULT 'presencial' CHECK (modalidade IN ('presencial','teleconsulta')),
   PRIMARY KEY (id_prestador, id_estabelecimento),
-  FOREIGN KEY (id_prestador)
-    REFERENCES prestador (id_prestador) ON DELETE CASCADE,
-  FOREIGN KEY (id_estabelecimento)
-    REFERENCES estabelecimento (id_estabelecimento) ON DELETE CASCADE
+  FOREIGN KEY (id_prestador) REFERENCES prestador (id_prestador) ON DELETE CASCADE,
+  FOREIGN KEY (id_estabelecimento) REFERENCES estabelecimento (id_estabelecimento) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS agendamento (
-  id_agendamento     INTEGER PRIMARY KEY AUTOINCREMENT,
-  id_paciente        INTEGER NOT NULL,
-  id_prestador       INTEGER NOT NULL,
+  id_agendamento INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_paciente INTEGER NOT NULL,
+  id_prestador INTEGER NOT NULL,
   id_estabelecimento INTEGER,
-  tipo               TEXT NOT NULL CHECK (tipo IN ('consulta','exame')),
-  inicio             TEXT NOT NULL,
-  fim                TEXT NOT NULL,
-  status             TEXT NOT NULL DEFAULT 'agendado'
-                     CHECK (status IN ('agendado','realizado','cancelado','faltou')),
-  observacoes        TEXT,
-  criado_em          TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  tipo TEXT NOT NULL CHECK (tipo IN ('consulta','exame')),
+  inicio TEXT NOT NULL,
+  fim TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'agendado' CHECK (status IN ('agendado','realizado','cancelado','faltou')),
+  observacoes TEXT,
+  criado_em TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   CHECK (fim > inicio),
   UNIQUE (id_prestador, inicio),
-  FOREIGN KEY (id_paciente)
-    REFERENCES paciente (id_paciente) ON DELETE CASCADE,
-  FOREIGN KEY (id_prestador)
-    REFERENCES prestador (id_prestador) ON DELETE RESTRICT,
-  FOREIGN KEY (id_estabelecimento)
-    REFERENCES estabelecimento (id_estabelecimento) ON DELETE SET NULL
+  FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente) ON DELETE CASCADE,
+  FOREIGN KEY (id_prestador) REFERENCES prestador (id_prestador) ON DELETE RESTRICT,
+  FOREIGN KEY (id_estabelecimento) REFERENCES estabelecimento (id_estabelecimento) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS avaliacao (
-  id_avaliacao   INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_avaliacao INTEGER PRIMARY KEY AUTOINCREMENT,
   id_agendamento INTEGER NOT NULL UNIQUE,
-  id_paciente    INTEGER NOT NULL,
-  id_prestador   INTEGER NOT NULL,
-  nota           INTEGER NOT NULL CHECK (nota BETWEEN 1 AND 5),
-  comentario     TEXT,
+  id_paciente INTEGER NOT NULL,
+  id_prestador INTEGER NOT NULL,
+  nota INTEGER NOT NULL CHECK (nota BETWEEN 1 AND 5),
+  comentario TEXT,
   data_avaliacao TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-  FOREIGN KEY (id_agendamento)
-    REFERENCES agendamento (id_agendamento) ON DELETE CASCADE,
-  FOREIGN KEY (id_paciente)
-    REFERENCES paciente (id_paciente) ON DELETE CASCADE,
-  FOREIGN KEY (id_prestador)
-    REFERENCES prestador (id_prestador) ON DELETE CASCADE
+  FOREIGN KEY (id_agendamento) REFERENCES agendamento (id_agendamento) ON DELETE CASCADE,
+  FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente) ON DELETE CASCADE,
+  FOREIGN KEY (id_prestador) REFERENCES prestador (id_prestador) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_estab_cidade    ON estabelecimento (cidade, tipo);
-CREATE INDEX IF NOT EXISTS idx_prest_espec     ON prestador (id_especialidade);
-CREATE INDEX IF NOT EXISTS idx_agend_paciente  ON agendamento (id_paciente, inicio);
+CREATE INDEX IF NOT EXISTS idx_estab_cidade ON estabelecimento (cidade, tipo);
+CREATE INDEX IF NOT EXISTS idx_prest_espec ON prestador (id_especialidade);
+CREATE INDEX IF NOT EXISTS idx_agend_paciente ON agendamento (id_paciente, inicio);
 CREATE INDEX IF NOT EXISTS idx_agend_prestador ON agendamento (id_prestador, inicio);
+
+CREATE TRIGGER IF NOT EXISTS trg_atualiza_media_prestador_insert
+AFTER INSERT ON avaliacao
+BEGIN
+  UPDATE prestador
+  SET media_avaliacao = (
+    SELECT ROUND(AVG(nota), 2)
+    FROM avaliacao
+    WHERE id_prestador = NEW.id_prestador
+  ),
+  qtd_avaliacoes = (
+    SELECT COUNT(*)
+    FROM avaliacao
+    WHERE id_prestador = NEW.id_prestador
+  )
+  WHERE id_prestador = NEW.id_prestador;
+END;
 ```
 
-Dois pontos merecem destaque:
+Alguns detalhes importantes dessa estrutura:
 
-- **`PRAGMA foreign_keys = ON`** é obrigatório. O SQLite desativa a verificação de chaves estrangeiras por padrão; sem essa linha, as restrições do modelo ER existem no esquema mas não são aplicadas.
-- **`PRAGMA journal_mode = WAL`** melhora o desempenho de leitura concorrente, situação comum quando uma tela lista dados enquanto outra grava.
+- **`PRAGMA foreign_keys = ON`**: por padrão o SQLite não valida chaves estrangeiras se esse comando não for executado ao abrir a conexão, então deixamos ele ativo para garantir a integridade entre as tabelas.
+- **`TRIGGER trg_atualiza_media_prestador_insert`**: sempre que o paciente avalia uma consulta na tabela `avaliacao`, essa trigger já recalcula a nota média (`media_avaliacao`) e a soma de avaliações (`qtd_avaliacoes`) na tabela `prestador`.
 
----
+### Conferência dos requisitos da disciplina para o banco local
 
-## 5. Controle de versão do esquema (migrations)
+| Tabela | Quantidade de colunas | Chave primária (PK) | Chaves estrangeiras (FK) |
+|---|---|---|---|
+| `paciente` | 7 colunas | `id_paciente` | Nenhuma |
+| `especialidade` | 4 colunas | `id_especialidade` | Nenhuma |
+| `estabelecimento` | 11 colunas | `id_estabelecimento` | Nenhuma |
+| `prestador` | 8 colunas | `id_prestador` | `id_especialidade` (ref. `especialidade`) |
+| `prestador_estabelecimento` | 3 colunas | `id_prestador`, `id_estabelecimento` | `id_prestador` (ref. `prestador`), `id_estabelecimento` (ref. `estabelecimento`) |
+| `agendamento` | 10 colunas | `id_agendamento` | `id_paciente` (ref. `paciente`), `id_prestador` (ref. `prestador`), `id_estabelecimento` (ref. `estabelecimento`) |
+| `avaliacao` | 7 colunas | `id_avaliacao` | `id_agendamento` (ref. `agendamento`), `id_paciente` (ref. `paciente`), `id_prestador` (ref. `prestador`) |
 
-Para permitir evolução do banco sem perder os dados já gravados no celular do usuário, o controle é feito pelo `PRAGMA user_version`:
+- **Mínimo de 4 tabelas:** 7 tabelas criadas.
+- **Mínimo de 3 colunas por tabela:** todas têm entre 3 e 11 colunas.
+- **Relação entre ao menos 2 tabelas:** 8 chaves estrangeiras relacionando as tabelas.
+
+## 5. Inicialização e controle de versão (`migrations.ts`)
+
+Para saber se o banco já foi criado no celular do usuário ou se é o primeiro acesso, consultamos o `PRAGMA user_version` do SQLite. Se a versão for `0`, o app roda o script das tabelas e faz a carga inicial dos dados:
 
 ```ts
 // src/database/migrations.ts
@@ -195,179 +214,216 @@ import { seedInicial } from './seed';
 const VERSAO_ATUAL = 1;
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const linha = await db.getFirstAsync<{ user_version: number }>(
+  await db.execAsync('PRAGMA foreign_keys = ON;');
+
+  const resultado = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
   );
-  let versao = linha?.user_version ?? 0;
+  const versaoBanco = resultado?.user_version ?? 0;
 
-  if (versao === VERSAO_ATUAL) return;
-
-  if (versao === 0) {
-    await db.execAsync(SCHEMA_V1);
-    await seedInicial(db);
-    versao = 1;
+  if (versaoBanco >= VERSAO_ATUAL) {
+    return;
   }
 
-  // Versões futuras entram aqui como novos blocos `if (versao === n)`
+  if (versaoBanco === 0) {
+    await db.execAsync(SCHEMA_V1);
+    await seedInicial(db);
+  }
 
   await db.execAsync(`PRAGMA user_version = ${VERSAO_ATUAL}`);
 }
 ```
 
----
+## 6. Carga inicial de dados (`seed.ts`)
 
-## 6. Carga inicial dos dados (seed)
-
-Os dados de estabelecimentos, especialidades e prestadores vêm do **CNES**. Como o aplicativo precisa funcionar sem internet, a base **não é consultada em tempo de execução**. O fluxo é:
-
-1. Durante o desenvolvimento, o grupo baixa o extrato do CNES em <http://cnes.datasus.gov.br/>.
-2. Os registros são filtrados para os municípios da Serra Gaúcha e reduzidos às colunas do modelo ER.
-3. O resultado é convertido em `assets/seed/dados-iniciais.json` e embarcado no APK.
-4. Na primeira execução, `seedInicial()` lê esse JSON e o insere no SQLite dentro de uma única transação.
+Como o aplicativo precisa funcionar sem internet desde o primeiro uso, os dados de especialidades, hospitais, clínicas, laboratórios e médicos da Serra Gaúcha vão pré-carregados num arquivo JSON local (`assets/seed/dados-iniciais.json`) e são inseridos no SQLite na primeira abertura do app.
 
 ```ts
 // src/database/seed.ts
+import type { SQLiteDatabase } from 'expo-sqlite';
+
 export async function seedInicial(db: SQLiteDatabase) {
   const dados = require('../../assets/seed/dados-iniciais.json');
 
   await db.withTransactionAsync(async () => {
-    for (const e of dados.especialidades) {
+    for (const esp of dados.especialidades) {
       await db.runAsync(
         'INSERT INTO especialidade (nome, descricao, icone) VALUES (?, ?, ?)',
-        [e.nome, e.descricao, e.icone]
+        [esp.nome, esp.descricao, esp.icone]
       );
     }
-    for (const es of dados.estabelecimentos) {
+
+    for (const est of dados.estabelecimentos) {
       await db.runAsync(
         `INSERT INTO estabelecimento
-           (nome_fantasia, tipo, codigo_cnes, cidade, bairro, telefone, latitude, longitude)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [es.nome, es.tipo, es.cnes, es.cidade, es.bairro, es.telefone, es.lat, es.lng]
+          (nome_fantasia, tipo, codigo_cnes, cidade, bairro, endereco, telefone, latitude, longitude)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [est.nome, est.tipo, est.cnes, est.cidade, est.bairro, est.endereco, est.telefone, est.lat, est.lng]
       );
     }
-    // demais entidades...
+
+    for (const prest of dados.prestadores) {
+      await db.runAsync(
+        `INSERT INTO prestador
+          (id_especialidade, nome_completo, registro_profissional, biografia)
+         VALUES (?, ?, ?, ?)`,
+        [prest.idEspecialidade, prest.nome, prest.registro, prest.biografia]
+      );
+    }
+
+    for (const vinculo of dados.prestadoresEstabelecimentos) {
+      await db.runAsync(
+        `INSERT INTO prestador_estabelecimento
+          (id_prestador, id_estabelecimento, modalidade)
+         VALUES (?, ?, ?)`,
+        [vinculo.idPrestador, vinculo.idEstabelecimento, vinculo.modalidade]
+      );
+    }
   });
 }
 ```
 
-A transação garante que, se o aplicativo for fechado no meio da carga, o banco não fique pela metade: ou tudo é gravado, ou nada é.
+Usamos `withTransactionAsync` para que todos os `INSERT` rodem dentro de uma única transação (deixando a inserção inicial muito mais rápida e evitando que o banco fique com dados pela metade caso o app seja fechado durante o carregamento).
 
----
+## 7. Exemplos de consultas e gravação no app
 
-## 7. Acesso aos dados pelo aplicativo
+Nas telas do aplicativo, acessamos a instância do banco através do hook `useSQLiteContext()`.
 
-Dentro das telas, o acesso é feito pelo hook `useSQLiteContext()`:
+### Busca de prestadores por especialidade e cidade
+
+Substitui o filtro em memória que antes era feito sobre os arrays `PRESTADORES` e `MEDICOS` na tela `app/(tabs)/guia-medico/resultados.tsx`:
 
 ```tsx
-// Exemplo: busca de prestadores por especialidade (HU02)
 import { useSQLiteContext } from 'expo-sqlite';
+import { useCallback } from 'react';
 
 export function useBuscaPrestadores(especialidade: string, cidade: string) {
   const db = useSQLiteContext();
 
   return useCallback(async () => {
-    return db.getAllAsync(
-      `SELECT p.id_prestador,
-              p.nome_completo,
-              p.media_avaliacao,
-              p.qtd_avaliacoes,
-              e.nome  AS especialidade,
-              es.nome_fantasia,
-              es.bairro
-         FROM prestador p
-         JOIN especialidade e
-           ON e.id_especialidade = p.id_especialidade
-         JOIN prestador_estabelecimento pe
-           ON pe.id_prestador = p.id_prestador
-         JOIN estabelecimento es
-           ON es.id_estabelecimento = pe.id_estabelecimento
-        WHERE p.ativo = 1
-          AND e.nome LIKE ?
-          AND es.cidade = ?
-        ORDER BY p.media_avaliacao DESC`,
+    return await db.getAllAsync(
+      `SELECT
+        p.id_prestador,
+        p.nome_completo,
+        p.media_avaliacao,
+        p.qtd_avaliacoes,
+        e.nome AS especialidade,
+        es.nome_fantasia,
+        es.endereco,
+        es.bairro,
+        es.telefone
+      FROM prestador p
+      INNER JOIN especialidade e ON e.id_especialidade = p.id_especialidade
+      INNER JOIN prestador_estabelecimento pe ON pe.id_prestador = p.id_prestador
+      INNER JOIN estabelecimento es ON es.id_estabelecimento = pe.id_estabelecimento
+      WHERE p.ativo = 1
+        AND e.nome LIKE ?
+        AND es.cidade = ?
+      ORDER BY p.media_avaliacao DESC`,
       [`%${especialidade}%`, cidade]
     );
   }, [db, especialidade, cidade]);
 }
 ```
 
-Todas as consultas usam **parâmetros ligados (`?`)** em vez de concatenação de strings — prática que elimina o risco de injeção de SQL e permite ao SQLite reaproveitar o plano de execução.
+### Agendamento, cancelamento e avaliação
 
-### Operação de escrita com transação
+Substitui o estado temporário do `AppointmentsContext.tsx` (que perdia os agendamentos ao fechar o aplicativo) por operações reais no banco:
 
 ```ts
-// Confirmação de agendamento (HU03)
+// Criar novo agendamento (usado em app/(tabs)/guia-medico/agendar-consulta.tsx)
 export async function confirmarAgendamento(db: SQLiteDatabase, dados: NovoAgendamento) {
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `INSERT INTO agendamento
-         (id_paciente, id_prestador, id_estabelecimento, tipo, inicio, fim, observacoes)
+        (id_paciente, id_prestador, id_estabelecimento, tipo, inicio, fim, observacoes)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [dados.paciente, dados.prestador, dados.estabelecimento,
-       dados.tipo, dados.inicio, dados.fim, dados.observacoes]
+      [
+        dados.paciente,
+        dados.prestador,
+        dados.estabelecimento,
+        dados.tipo,
+        dados.inicio,
+        dados.fim,
+        dados.observacoes,
+      ]
+    );
+  });
+}
+
+// Cancelar agendamento (usado no modal de cancelamento em app/(tabs)/Agenda.tsx)
+export async function cancelarAgendamento(
+  db: SQLiteDatabase,
+  idAgendamento: number,
+  motivo: string
+) {
+  await db.runAsync(
+    `UPDATE agendamento
+     SET status = 'cancelado',
+         observacoes = ?
+     WHERE id_agendamento = ?`,
+    [motivo, idAgendamento]
+  );
+}
+
+// Salvar avaliação de atendimento
+export async function registrarAvaliacao(db: SQLiteDatabase, dados: NovaAvaliacao) {
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(
+      `INSERT INTO avaliacao
+        (id_agendamento, id_paciente, id_prestador, nota, comentario)
+       VALUES (?, ?, ?, ?, ?)`,
+      [dados.agendamento, dados.paciente, dados.prestador, dados.nota, dados.comentario]
     );
   });
 }
 ```
 
-A restrição `UNIQUE (id_prestador, inicio)` faz o próprio banco rejeitar a gravação de um horário já ocupado, mesmo que a interface permita o toque duplo.
+## 8. Consultas para análise de dados (Indicadores)
 
----
-
-## 8. Consultas analíticas (ciência de dados)
-
-O painel de indicadores é alimentado por consultas de agregação executadas no próprio SQLite:
+Para cumprir a parte de Ciência de Dados do Projeto Integrador VI-B, o painel de indicadores executa consultas de agregação diretamente no SQLite local:
 
 ```sql
--- Especialidades mais procuradas
+-- 1. Especialidades mais procuradas (Top 5)
 SELECT e.nome, COUNT(*) AS total
-  FROM agendamento a
-  JOIN prestador p     ON p.id_prestador = a.id_prestador
-  JOIN especialidade e ON e.id_especialidade = p.id_especialidade
- GROUP BY e.nome
- ORDER BY total DESC
- LIMIT 5;
+FROM agendamento a
+INNER JOIN prestador p ON p.id_prestador = a.id_prestador
+INNER JOIN especialidade e ON e.id_especialidade = p.id_especialidade
+GROUP BY e.nome
+ORDER BY total DESC
+LIMIT 5;
 
--- Taxa de comparecimento
-SELECT status,
-       COUNT(*) AS qtd,
-       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS percentual
-  FROM agendamento
- GROUP BY status;
+-- 2. Proporção de agendamentos por status (realizados, cancelados, agendados, faltou)
+SELECT
+  status,
+  COUNT(*) AS qtd,
+  ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM agendamento), 1) AS percentual
+FROM agendamento
+GROUP BY status;
 
--- Prestadores mais bem avaliados (mínimo de 3 avaliações)
-SELECT p.nome_completo,
-       ROUND(AVG(av.nota), 2) AS media,
-       COUNT(av.id_avaliacao) AS avaliacoes
-  FROM prestador p
-  JOIN avaliacao av ON av.id_prestador = p.id_prestador
- GROUP BY p.id_prestador
-HAVING COUNT(av.id_avaliacao) >= 3
- ORDER BY media DESC;
+-- 3. Prestadores com melhor média de avaliação
+SELECT
+  p.nome_completo,
+  ROUND(AVG(av.nota), 2) AS media,
+  COUNT(av.id_avaliacao) AS total_avaliacoes
+FROM prestador p
+INNER JOIN avaliacao av ON av.id_prestador = p.id_prestador
+GROUP BY p.id_prestador
+ORDER BY media DESC;
 
--- Horários de maior procura
-SELECT strftime('%H', inicio) AS hora, COUNT(*) AS total
-  FROM agendamento
- WHERE status <> 'cancelado'
- GROUP BY hora
- ORDER BY total DESC;
+-- 4. Horários com maior volume de agendamentos
+SELECT strftime('%H:00', inicio) AS faixa_horario, COUNT(*) AS total
+FROM agendamento
+WHERE status != 'cancelado'
+GROUP BY faixa_horario
+ORDER BY total DESC;
 ```
 
-O resultado dessas consultas é entregue diretamente aos gráficos da tela, sem processamento em servidor.
+## 9. Teste de funcionamento offline
 
----
+O passo a passo para validar o funcionamento sem internet no celular ou emulador é:
 
-## 9. Verificação do funcionamento offline
-
-Para comprovar o atendimento ao requisito, o roteiro de teste é:
-
-1. Instalar o APK no aparelho e abrir o aplicativo uma vez (a carga inicial acontece aqui).
-2. Ativar o modo avião.
-3. Executar o fluxo completo: buscar especialidade → escolher prestador → agendar → consultar "Minha agenda" → avaliar um atendimento passado → abrir o painel de indicadores.
-4. Fechar e reabrir o aplicativo, ainda em modo avião, confirmando que os dados gravados persistiram.
-
----
-
-## 10. Observação sobre o projeto herdado
-
-A versão do Projeto Integrador IV-A trazia as dependências `express`, `cors` e `axios` no `package.json`, usadas para servir dados por uma API. Como o VI-B exige banco local e operação offline, essas dependências deixam de ser necessárias em tempo de execução e devem ser removidas junto com o arquivo `app/api/mockData`, evitando que o aplicativo carregue código de servidor no pacote final.
+1. Instalar o APK e abrir o aplicativo pela primeira vez (para criar o arquivo `saude_serra.db` e rodar o `seedInicial`).
+2. Colocar o aparelho em **modo avião**.
+3. Navegar pelo Guia Médico, filtrar uma especialidade, escolher um médico e confirmar um agendamento em `agendar-consulta`.
+4. Abrir a aba **Agenda**, verificar que a consulta aparece listada, fechar o aplicativo completamente e abri-lo novamente (ainda em modo avião) para confirmar que os dados continuam salvos no dispositivo.
