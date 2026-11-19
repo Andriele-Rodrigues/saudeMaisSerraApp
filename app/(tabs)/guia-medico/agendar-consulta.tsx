@@ -1,5 +1,5 @@
 
-import { MEDICOS } from '@/app/api/mockData';
+import { MEDICOS } from '@/src/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';

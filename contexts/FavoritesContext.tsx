@@ -1,4 +1,4 @@
-import { Medico, Prestador } from '@/app/api/mockData';
+import { Medico, Prestador } from '@/src/data/mockData';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 // Um tipo que pode representar qualquer item que possa ser favoritado

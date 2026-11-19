@@ -1,7 +1,7 @@
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (

@@ -1,4 +1,4 @@
-import { PRESTADORES } from '@/app/api/mockData';
+import { PRESTADORES } from '@/src/data/mockData';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';

@@ -1,4 +1,4 @@
-import { PRESTADORES, Prestador } from '@/app/api/mockData';
+import { PRESTADORES, Prestador } from '@/src/data/mockData';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';

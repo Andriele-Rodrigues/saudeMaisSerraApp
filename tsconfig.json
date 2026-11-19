@@ -1,24 +1,10 @@
- {
+{
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "jsx": "react",
     "strict": true,
     "paths": {
       "@/*": ["./*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts", 
-    "app/(tabs)/index.tsx",
-    "componentss/DoctorCard.js",
-    "componentss/contextss/AppointmentContext.js",
-    "componentss/contextss/AppointmentContext.js",
-    "src/components/screens/MenuScreen.js",
-    "app/componentes/ServiceTypes.js",
-  
-
-  ],
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

@@ -1,10 +1,10 @@
 import { Href, Link } from 'expo-router'; // 👈 IMPORTANTE: Importe o Link
 import React from 'react';
 import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 // O ActionButton continua igual
-const ActionButton = ({ iconName, label, href }: { iconName: string; label: string; href: Href }) => (
+const ActionButton = ({ iconName, label, href }: { iconName: React.ComponentProps<typeof Icon>['name']; label: string; href: Href }) => (
   // Usamos o Link para envolver o botão e torná-lo navegável
   <Link href={href} asChild>
     <TouchableOpacity style={styles.actionButton}>
@@ -22,7 +22,7 @@ export default function IndexScreen() {
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <Image 
-            source={require('./assets/images/logo.png')}  // Substitua pelo caminho correto da sua logo
+            source={require('@/assets/images/logo.png')}  // Substitua pelo caminho correto da sua logo
             style={styles.logoImage}
           />
         </View>
@@ -50,7 +50,7 @@ export default function IndexScreen() {
          
              <View style={styles.bannerContainer}>
             <Image 
-              source={require('./assets/images/banner.png')}  // Substitua pelo caminho correto da sua imagem
+              source={require('@/assets/images/banner.png')}  // Substitua pelo caminho correto da sua imagem
               style={styles.bannerImage}
             />
           </View>
