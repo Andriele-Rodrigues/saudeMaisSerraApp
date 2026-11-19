@@ -40,15 +40,15 @@ A descrição completa do problema, do público-alvo e da origem dos dados está
 
 | Funcionalidade | Descrição |
 |---|---|
-| Guia Médico | Busca de estabelecimentos por tipo, região e especialidade |
-| Detalhes do prestador | Endereço, contato, mapa e equipe médica |
-| Agendamento | Escolha de médico, data e horário, com confirmação |
-| Minha Agenda | Listagem e cancelamento de agendamentos |
-| Exames e medicação | Acompanhamento de exames e medicamentos |
-| Favoritos | Prestadores marcados para acesso rápido |
-| Avaliação de atendimento | Nota de 1 a 5 e comentário após a consulta |
-| Painel de indicadores | Gráficos gerados a partir do banco local |
-| Equipe do projeto | Tela com os nomes completos dos integrantes |
+| Guia Médico | Busca de médicos e estabelecimentos por tipo e especialidade, lida do banco local |
+| Detalhes do prestador | Tipo, especialidades, endereço, contato, rotas (mapa externo) e equipe médica |
+| Agendamento | Escolha de médico, dia e horário, com validação de conflito e gravação no SQLite |
+| Minha Agenda | Próximos agendamentos separados do histórico, com cancelamento |
+| Exames e medicação | Telas de consulta com dados de exemplo (ainda sem gravação no banco) |
+| Favoritos | Estabelecimentos marcados para acesso rápido, salvos no banco |
+| Avaliação de atendimento | Nota de 1 a 5 e comentário para atendimentos realizados |
+| Painel de indicadores | Gráficos de barras gerados por consultas de agregação no banco local |
+| Equipe do projeto | Tela com os nomes completos dos integrantes, acessível pelo Perfil |
 
 > A lista completa de requisitos e histórias de usuário está em [Requisitos de usuário](projeto-integrador-vi-b/docs/01-requisitos-de-usuario.md).
 
@@ -65,6 +65,7 @@ A descrição completa do problema, do público-alvo e da origem dos dados está
 | 5 | [Tecnologias](projeto-integrador-vi-b/docs/04-tecnologias.md) | Linguagens, frameworks e bibliotecas, com links |
 | 6 | [Wireframes](projeto-integrador-vi-b/docs/05-wireframes.md) | Design das telas e mapa de navegação |
 | 7 | [Geração do APK](projeto-integrador-vi-b/docs/06-geracao-apk.md) | Processo de build do arquivo `.apk` |
+| 8 | [Vídeo demonstrativo](projeto-integrador-vi-b/docs/07-video-demonstrativo.md) | Link e roteiro do vídeo de apresentação |
 
 ---
 
@@ -136,16 +137,22 @@ Apresentação do código-fonte, da organização do projeto e do aplicativo em 
 ```text
 saudeMaisSerraApp/
 ├── app/                      # Telas do aplicativo (Expo Router)
-│   ├── _layout.tsx           # Layout raiz e providers
-│   └── (tabs)/               # Abas: Início, Carteira, Agenda, Perfil
+│   ├── _layout.tsx           # Layout raiz, SQLiteProvider e providers
+│   └── (tabs)/               # Abas: Início, Carteira, Agenda, Perfil e telas internas
 │       └── guia-medico/      # Fluxo de busca e agendamento
+├── src/
+│   └── database/             # Esquema, migração, carga inicial e repositories do SQLite
+├── assets/
+│   ├── images/               # Ícones, logo e splash
+│   └── seed/                 # dados-iniciais.json (carga inicial do banco)
 ├── contexts/                 # Estado compartilhado (agendamentos, favoritos)
 ├── constants/                # Tema e cores
 ├── hooks/                    # Hooks reutilizáveis
 ├── projeto-integrador-vi-b/  # Documentação do Projeto Integrador
 │   ├── README.md
-│   └── docs/                 # Requisitos, modelo ER, banco, tecnologias, wireframes, APK
+│   └── docs/                 # Requisitos, modelo ER, banco, tecnologias, wireframes, APK, vídeo
 ├── app.json                  # Configuração do Expo
+├── eas.json                  # Perfis de build do EAS (APK)
 └── package.json              # Dependências e scripts
 ```
 

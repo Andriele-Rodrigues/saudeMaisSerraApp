@@ -208,3 +208,24 @@ Tela simples, acessível pelo perfil, com a lista de todos os integrantes do gru
 
 - A tela exibe o nome completo de todos os integrantes do grupo.
 - A tela funciona sem conexão.
+
+---
+
+## 3. Situação da implementação
+
+Situação de cada funcionalidade na entrega da Etapa 2, de acordo com o código do aplicativo:
+
+| Funcionalidade | Status | Observação |
+|---|---|---|
+| F01 — Catálogo de serviços de saúde | Implementada | Filtro por tipo (médicos, clínicas, hospitais, laboratórios, consultórios) lido do banco local |
+| F02 — Busca por especialidade | Implementada | Lista de especialidades e resultados lidos do SQLite; a busca é por seleção na lista, não por texto parcial |
+| F03 — Busca por proximidade | Trabalho futuro | Não há filtro por cidade/bairro nem ordenação por distância; o botão "Rotas" apenas abre o mapa externo |
+| F04 — Detalhamento do prestador | Parcial | Ficha do estabelecimento com tipo, especialidades, endereço, telefone e equipe; a nota média aparece nos resultados de médicos. Registro profissional ainda não é preenchido |
+| F05 — Agendamento de consultas e exames | Implementada | Escolha de dia e horário, gravação no SQLite e validação de conflito de horário |
+| F06 — Minha agenda | Parcial | Lista futuros e histórico separados e permite cancelar; reagendamento ainda não existe |
+| F07 — Acompanhamento de exames | Parcial | A tela de exames existe, mas usa dados fixos na própria tela, sem gravação no banco |
+| F08 — Avaliação de serviços | Implementada | Nota de 1 a 5 e comentário para agendamentos realizados; a trigger atualiza a média do prestador |
+| F09 — Favoritos | Implementada | Estabelecimentos favoritos gravados na tabela `favorito`; médicos individuais não podem ser favoritados |
+| F10 — Notificações e lembretes | Trabalho futuro | A tela de notificações é apenas ilustrativa; não há lembretes locais |
+| F11 — Painel de indicadores | Parcial | Especialidades mais procuradas, agendamentos por status, mais bem avaliados e horários mais agendados; o histórico pessoal e a análise por dia da semana ficam para o futuro |
+| F12 — Tela da equipe | Implementada | Tela "Equipe do projeto", acessível pelo Perfil |

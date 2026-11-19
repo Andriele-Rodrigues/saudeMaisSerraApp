@@ -134,6 +134,6 @@ Para instalar e testar o APK gerado:
 
 1. Transferir o arquivo `.apk` para o celular Android (ou baixar pelo link/QR Code gerado pelo EAS Build) ou arrastar o arquivo para cima do emulador Android Studio.
 2. Permitir a instalação no Android (caso o aparelho peça permissão para instalar aplicativos fora da Play Store).
-3. Abrir o aplicativo **+ Saúde Serra**, momento em que o banco local `saude_serra.db` será inicializado no aparelho para uso offline.
+3. Abrir o aplicativo **+ Saúde Serra**, momento em que o banco local `saude_serra.db` é criado no aparelho para uso offline.
 
-Na entrega final do projeto (Etapa 2), o arquivo `.apk` gerado será anexado junto ao repositório no GitHub (na aba **Releases** ou na raiz do projeto, conforme solicitado na entrega).
+Na entrega final do projeto (Etapa 2), o arquivo `.apk` gerado é publicado na aba **Releases** do repositório no GitHub (tag `v1.0.0`).

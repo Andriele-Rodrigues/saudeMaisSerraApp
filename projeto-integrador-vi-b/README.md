@@ -15,10 +15,11 @@ Aplicativo móvel para gestão de serviços de saúde na região da Serra Gaúch
 | 1 | Este arquivo | Nome do projeto, problema, público-alvo e integrantes |
 | 2 | [Requisitos de usuário](docs/01-requisitos-de-usuario.md) | Funcionalidades e histórias de usuário |
 | 3 | [Modelo ER](docs/02-modelo-er.md) | Modelagem entidade-relacionamento do banco local |
-| 4 | [Banco de dados local](docs/03-banco-local-sqlite.md) | Como o SQLite será implementado no aplicativo |
+| 4 | [Banco de dados local](docs/03-banco-local-sqlite.md) | Implementação do SQLite no aplicativo |
 | 5 | [Tecnologias](docs/04-tecnologias.md) | Linguagens, frameworks e bibliotecas utilizadas |
 | 6 | [Wireframes](docs/05-wireframes.md) | Design das telas em alta definição |
 | 7 | [Geração do APK](docs/06-geracao-apk.md) | Processo de build do arquivo `.apk` |
+| 8 | [Vídeo demonstrativo](docs/07-video-demonstrativo.md) | Link e roteiro do vídeo de apresentação |
 
 ---
 
@@ -61,7 +62,7 @@ Estabelecimentos de pequeno e médio porte que ganham visibilidade digital e pas
 
 ## 4. Integrantes do grupo
 
-O aplicativo possui uma tela dedicada (`app/(tabs)/guia-medico/equipe.tsx`) exibindo o nome completo de todos os integrantes, conforme exigido na Etapa 1.
+O aplicativo possui uma tela dedicada (`app/(tabs)/equipe-projeto.tsx`, acessível pelo Perfil) exibindo o nome completo de todos os integrantes, conforme exigido na Etapa 1.
 
 | Nome completo |
 |---|
@@ -81,3 +82,5 @@ O aplicativo possui uma tela dedicada (`app/(tabs)/guia-medico/equipe.tsx`) exib
 | Portal Brasileiro de Dados Abertos | Complemento de dados de unidades públicas de saúde | <https://dados.gov.br/dataset> |
 
 Como o requisito do projeto exige que o banco funcione **localmente, mesmo sem conexão**, essas bases **não são consultadas em tempo de execução**. Elas são baixadas e tratadas uma única vez durante o desenvolvimento, filtradas para os municípios da Serra e embarcadas no aplicativo como carga inicial (*seed*) do SQLite. O detalhamento desse processo está em [Banco de dados local](docs/03-banco-local-sqlite.md).
+
+> **Situação na Etapa 2:** a carga inicial entregue (`assets/seed/dados-iniciais.json`) usa dados fictícios de demonstração, no mesmo formato descrito acima. A importação de dados reais do CNES fica como trabalho futuro.
