@@ -1,7 +1,8 @@
-import { PRESTADORES } from '@/src/data/mockData';
+import { listarEquipe } from '@/src/database/repositories/prestadorRepository';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -13,11 +14,13 @@ import {
 
 export default function EquipeScreen() {
   const router = useRouter();
-  const { endereco } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const db = useSQLiteContext();
+  const [equipe, setEquipe] = useState<{ id: number; nome: string; especialidade: string }[]>([]);
 
-  // Busca a clínica pelo endereço
-  const prestador = PRESTADORES.find(p => p.endereco === endereco);
-  const equipe = prestador?.equipe || [];
+  useEffect(() => {
+    listarEquipe(db, Number(id)).then(setEquipe);
+  }, [db, id]);
 
   const renderCard = ({ item }: any) => (
     <View style={styles.card}>
@@ -39,7 +42,7 @@ export default function EquipeScreen() {
 
       <FlatList
         data={equipe}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         renderItem={renderCard}
         ListEmptyComponent={
           <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>

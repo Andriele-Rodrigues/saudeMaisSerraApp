@@ -1,26 +1,61 @@
-
-import { MEDICOS } from '@/src/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentsContext';
+import { combinarDiaHora, formatarDataBanco, somarMinutos } from '@/src/database/datas';
+import {
+  ConflitoHorarioError,
+  listarHorariosOcupados,
+} from '@/src/database/repositories/agendamentoRepository';
+import { buscarMedico, Medico } from '@/src/database/repositories/prestadorRepository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+const HORARIOS = ['09:00', '09:30', '10:00', '11:30', '14:00', '15:30'];
+const DURACAO_MINUTOS = 30;
+const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-
-// Dados de exemplo, substitua por sua lógica real se necessário
-const AVAILABLE_DAYS = ['20', '21', '24', '25', '26'];
-const AVAILABLE_TIMES = ['09:00', '09:30', '10:00', '11:30', '14:00', '15:30'];
+// Próximos dias úteis (segunda a sábado), a partir de amanhã.
+function proximosDias(quantidade: number): Date[] {
+  const dias: Date[] = [];
+  const dia = new Date();
+  dia.setHours(0, 0, 0, 0);
+  while (dias.length < quantidade) {
+    dia.setDate(dia.getDate() + 1);
+    if (dia.getDay() !== 0) dias.push(new Date(dia));
+  }
+  return dias;
+}
 
 export default function AgendarConsultaScreen() {
   const router = useRouter();
-  const { medicoId } = useLocalSearchParams();
-  const medico = MEDICOS.find(m => m.id === medicoId);
-  
+  const db = useSQLiteContext();
+  const { medicoId } = useLocalSearchParams<{ medicoId: string }>();
   const { addAppointment } = useAppointments();
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [medico, setMedico] = useState<Medico | null>(null);
+  const [loading, setLoading] = useState(true);
+  const dias = useMemo(() => proximosDias(6), []);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [ocupados, setOcupados] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    buscarMedico(db, Number(medicoId))
+      .then(setMedico)
+      .finally(() => setLoading(false));
+  }, [db, medicoId]);
+
+  // Ao trocar de dia, busca os horários já ocupados do profissional.
+  useEffect(() => {
+    if (!selectedDay || !medico) return;
+    listarHorariosOcupados(db, medico.id, formatarDataBanco(selectedDay).slice(0, 10)).then(setOcupados);
+  }, [db, medico, selectedDay]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ marginTop: 40 }} />;
+  }
 
   if (!medico) {
     return (
@@ -29,77 +64,92 @@ export default function AgendarConsultaScreen() {
       </SafeAreaView>
     );
   }
-  
-  const handleConfirm = () => {
-      if (!selectedDay || !selectedTime) {
-          Alert.alert("Erro", "Por favor, selecione um dia e um horário.");
-          return;
-      }
-      
-      const newAppointment = {
-        doctor: medico.nome,
-        // --- CORREÇÃO APLICADA AQUI ---
-        // Pegamos a primeira especialidade da lista para corresponder ao tipo esperado.
-        specialty: medico.especialidades[0], 
-        date: `${selectedDay}/10/2025`,
-        time: selectedTime,
-        address: medico.endereco,
-        phone: medico.telefone,
-        clinicName: medico.endereco ? 'Consultório Particular' : 'Clínica/Hospital',
-      };
 
-      addAppointment(newAppointment);
-
+  const handleConfirm = async () => {
+    if (!selectedDay || !selectedTime) {
+      Alert.alert("Atenção", "Por favor, selecione um dia e um horário.");
+      return;
+    }
+    const inicio = combinarDiaHora(selectedDay, selectedTime);
+    setSalvando(true);
+    try {
+      await addAppointment({
+        prestador: medico.id,
+        estabelecimento: medico.idEstabelecimento,
+        tipo: medico.tipoEstabelecimento === 'laboratorio' ? 'exame' : 'consulta',
+        inicio: formatarDataBanco(inicio),
+        fim: formatarDataBanco(somarMinutos(inicio, DURACAO_MINUTOS)),
+        observacoes: notes.trim() || null,
+      });
       Alert.alert(
-          "Agendamento Concluído!",
-          `A sua consulta com ${medico.nome} foi marcada com sucesso.`,
-          [{ text: "OK", onPress: () => router.navigate('/') }]
+        "Agendamento concluído!",
+        `O seu atendimento com ${medico.nome} foi marcado com sucesso.`,
+        [{ text: "OK", onPress: () => router.navigate('/Agenda') }]
       );
+    } catch (erro) {
+      if (erro instanceof ConflitoHorarioError) {
+        Alert.alert("Horário indisponível", erro.message);
+        setSelectedTime(null);
+        listarHorariosOcupados(db, medico.id, formatarDataBanco(selectedDay).slice(0, 10)).then(setOcupados);
+      } else {
+        Alert.alert("Erro", "Não foi possível salvar o agendamento. Tente novamente.");
+      }
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <Image source={{ uri: medico.foto }} style={styles.doctorImage} />
           <Text style={styles.doctorName}>{medico.nome}</Text>
-          <Text style={styles.doctorSpecialty}>{medico.especialidades.join(' / ')}</Text>
+          <Text style={styles.doctorSpecialty}>{medico.especialidade}</Text>
+          {medico.estabelecimento && <Text style={styles.doctorSpecialty}>{medico.estabelecimento}</Text>}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Selecione o Dia (Outubro 2025)</Text>
+          <Text style={styles.sectionTitle}>Selecione o dia</Text>
           <View style={styles.grid}>
-            {AVAILABLE_DAYS.map(day => (
-              <TouchableOpacity
-                key={day}
-                style={[styles.gridItem, selectedDay === day && styles.gridItemSelected]}
-                onPress={() => setSelectedDay(day)}
-              >
-                <Text style={[styles.gridItemText, selectedDay === day && styles.gridItemSelectedText]}>{day}</Text>
-              </TouchableOpacity>
-            ))}
+            {dias.map(dia => {
+              const selecionado = selectedDay?.getTime() === dia.getTime();
+              return (
+                <TouchableOpacity
+                  key={dia.toISOString()}
+                  style={[styles.gridItem, selecionado && styles.gridItemSelected]}
+                  onPress={() => { setSelectedDay(dia); setSelectedTime(null); }}
+                >
+                  <Text style={[styles.dayLabel, selecionado && styles.gridItemSelectedText]}>{DIAS_SEMANA[dia.getDay()]}</Text>
+                  <Text style={[styles.gridItemText, selecionado && styles.gridItemSelectedText]}>{dia.getDate()}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {selectedDay && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Selecione o Horário</Text>
+            <Text style={styles.sectionTitle}>Selecione o horário</Text>
             <View style={styles.grid}>
-              {AVAILABLE_TIMES.map(time => (
-                <TouchableOpacity
-                  key={time}
-                  style={[styles.gridItem, styles.timeItem, selectedTime === time && styles.gridItemSelected]}
-                  onPress={() => setSelectedTime(time)}
-                >
-                  <Text style={[styles.gridItemText, selectedTime === time && styles.gridItemSelectedText]}>{time}</Text>
-                </TouchableOpacity>
-              ))}
+              {HORARIOS.map(time => {
+                const ocupado = ocupados.includes(time);
+                return (
+                  <TouchableOpacity
+                    key={time}
+                    disabled={ocupado}
+                    style={[styles.gridItem, styles.timeItem, selectedTime === time && styles.gridItemSelected, ocupado && styles.gridItemDisabled]}
+                    onPress={() => setSelectedTime(time)}
+                  >
+                    <Text style={[styles.gridItemText, selectedTime === time && styles.gridItemSelectedText, ocupado && styles.gridItemDisabledText]}>{time}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
 
         <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informações Adicionais (Opcional)</Text>
+            <Text style={styles.sectionTitle}>Informações adicionais (opcional)</Text>
             <TextInput
                 style={styles.notesInput}
                 placeholder="Ex: motivo da consulta, sintomas..."
@@ -110,8 +160,8 @@ export default function AgendarConsultaScreen() {
         </View>
       </ScrollView>
 
-       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-            <Text style={styles.confirmButtonText}>Confirmar Agendamento</Text>
+       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm} disabled={salvando}>
+            <Text style={styles.confirmButtonText}>{salvando ? 'Salvando...' : 'Confirmar Agendamento'}</Text>
         </TouchableOpacity>
     </SafeAreaView>
   );
@@ -134,6 +184,9 @@ const styles = StyleSheet.create({
     gridItemSelected: { backgroundColor: '#00A896' },
     gridItemText: { fontSize: 16, fontWeight: 'bold' },
     gridItemSelectedText: { color: '#fff' },
+    gridItemDisabled: { backgroundColor: '#f1f3f5' },
+    gridItemDisabledText: { color: '#bbb', textDecorationLine: 'line-through' },
+    dayLabel: { fontSize: 11, color: '#555' },
     notesInput: {
         backgroundColor: '#fff',
         borderWidth: 1,

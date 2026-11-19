@@ -23,6 +23,8 @@ erDiagram
     AGENDAMENTO ||--o| AVALIACAO : "gera"
     PACIENTE ||--o{ AVALIACAO : "escreve"
     PRESTADOR ||--o{ AVALIACAO : "recebe"
+    PACIENTE ||--o{ FAVORITO : "marca"
+    ESTABELECIMENTO ||--o{ FAVORITO : "é marcado em"
 
     PACIENTE {
         INTEGER id_paciente PK
@@ -87,6 +89,12 @@ erDiagram
         INTEGER nota
         TEXT comentario
         TEXT data_avaliacao
+    }
+    FAVORITO {
+        INTEGER id_favorito PK
+        INTEGER id_paciente FK
+        INTEGER id_estabelecimento FK
+        TEXT criado_em
     }
 ```
 
@@ -189,6 +197,17 @@ Um profissional pode atender em vários estabelecimentos, e um estabelecimento p
 
 O campo `id_agendamento` é único para limitar cada atendimento a, no máximo, uma avaliação. Os campos `id_paciente` e `id_prestador` repetem informações disponíveis no agendamento e devem ser mantidos consistentes com ele.
 
+### `favorito` — estabelecimentos marcados pelo paciente
+
+| Coluna | Tipo | Restrição |
+|---|---|---|
+| `id_favorito` | INTEGER | PK, AUTOINCREMENT |
+| `id_paciente` | INTEGER | NOT NULL, FK → `paciente(id_paciente)` ON DELETE CASCADE |
+| `id_estabelecimento` | INTEGER | NOT NULL, FK → `estabelecimento(id_estabelecimento)` ON DELETE CASCADE |
+| `criado_em` | TEXT | NOT NULL, DEFAULT `datetime('now','localtime')` |
+
+**Restrição adicional:** `UNIQUE (id_paciente, id_estabelecimento)` impede marcar o mesmo estabelecimento duas vezes.
+
 ---
 
 ## Resumo dos relacionamentos
@@ -205,8 +224,10 @@ O campo `id_agendamento` é único para limitar cada atendimento a, no máximo, 
 | `agendamento` → `avaliacao` | 1 : 0..1 | Cada agendamento admite no máximo uma avaliação |
 | `paciente` → `avaliacao` | 1 : N | Um paciente pode escrever várias avaliações |
 | `prestador` → `avaliacao` | 1 : N | Um prestador pode receber várias avaliações |
+| `paciente` → `favorito` | 1 : N | Um paciente pode marcar vários estabelecimentos como favoritos |
+| `estabelecimento` → `favorito` | 1 : N | Um estabelecimento pode ser favorito de vários pacientes |
 
-Há **9 referências por chave estrangeira** (sem contar o relacionamento N:N derivado): 1 em `prestador`, 2 em `prestador_estabelecimento`, 3 em `agendamento` e 3 em `avaliacao`.
+Há **11 referências por chave estrangeira** (sem contar o relacionamento N:N derivado): 1 em `prestador`, 2 em `prestador_estabelecimento`, 3 em `agendamento`, 3 em `avaliacao` e 2 em `favorito`.
 
 ---
 
@@ -224,4 +245,4 @@ As regras abaixo complementam as restrições declaradas nas tabelas. **Sua desc
 
 ---
 
-**Atendimento aos requisitos da Etapa 1:** o modelo contém **7 tabelas** (mínimo de 4), todas com **3 ou mais colunas**, e **9 referências por chave estrangeira** entre tabelas (mínimo de uma relação entre duas tabelas). Apresenta também os tipos de dados, chaves, restrições, cardinalidades e regras de negócio solicitados.
+**Atendimento aos requisitos da Etapa 1:** o modelo contém **8 tabelas** (mínimo de 4), todas com **3 ou mais colunas**, e **11 referências por chave estrangeira** entre tabelas (mínimo de uma relação entre duas tabelas). Apresenta também os tipos de dados, chaves, restrições, cardinalidades e regras de negócio solicitados.

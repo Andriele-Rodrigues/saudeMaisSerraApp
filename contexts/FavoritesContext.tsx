@@ -1,55 +1,54 @@
-import { Medico, Prestador } from '@/src/data/mockData';
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import {
+  adicionarFavorito,
+  listarFavoritos,
+  removerFavorito,
+} from '@/src/database/repositories/favoritoRepository';
+import { ID_PACIENTE_PADRAO } from '@/src/database/repositories/pacienteRepository';
+import type { Estabelecimento } from '@/src/database/repositories/prestadorRepository';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
-// Um tipo que pode representar qualquer item que possa ser favoritado
-// Usamos uma união dos tipos originais para máxima flexibilidade
-export type FavoriteItem = Prestador | Medico;
-
-// Define a estrutura do que será fornecido pelo contexto
 type FavoritesContextType = {
-  favorites: FavoriteItem[];
-  addFavorite: (item: FavoriteItem) => void;
-  removeFavorite: (itemId: string) => void;
-  isFavorite: (itemId: string) => boolean;
+  favorites: Estabelecimento[];
+  addFavorite: (idEstabelecimento: number) => Promise<void>;
+  removeFavorite: (idEstabelecimento: number) => Promise<void>;
+  isFavorite: (idEstabelecimento: number) => boolean;
 };
 
-// Cria o contexto
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
-// Componente Provedor que irá "abraçar" a sua aplicação
+// Favoritos são estabelecimentos marcados pelo usuário e ficam salvos na tabela `favorito`.
 export const FavoritesProvider = ({ children }: { children: ReactNode }) => {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const db = useSQLiteContext();
+  const [favorites, setFavorites] = useState<Estabelecimento[]>([]);
 
-  const addFavorite = (item: FavoriteItem) => {
-    // Evita adicionar duplicados
-    if (!favorites.some(fav => fav.id === item.id)) {
-      setFavorites(prevFavorites => [...prevFavorites, item]);
-    }
+  const reload = useCallback(async () => {
+    setFavorites(await listarFavoritos(db, ID_PACIENTE_PADRAO));
+  }, [db]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  const addFavorite = async (idEstabelecimento: number) => {
+    await adicionarFavorito(db, ID_PACIENTE_PADRAO, idEstabelecimento);
+    await reload();
   };
 
-  const removeFavorite = (itemId: string) => {
-    setFavorites(prevFavorites => prevFavorites.filter(p => p.id !== itemId));
+  const removeFavorite = async (idEstabelecimento: number) => {
+    await removerFavorito(db, ID_PACIENTE_PADRAO, idEstabelecimento);
+    await reload();
   };
 
-  const isFavorite = (itemId: string) => {
-    return favorites.some(p => p.id === itemId);
-  };
-
-  const value = {
-    favorites,
-    addFavorite,
-    removeFavorite,
-    isFavorite,
-  };
+  const isFavorite = (idEstabelecimento: number) => favorites.some(f => f.id === idEstabelecimento);
 
   return (
-    <FavoritesContext.Provider value={value}>
+    <FavoritesContext.Provider value={{ favorites, addFavorite, removeFavorite, isFavorite }}>
       {children}
     </FavoritesContext.Provider>
   );
 };
 
-// Hook personalizado para aceder facilmente ao contexto
 export const useFavorites = () => {
   const context = useContext(FavoritesContext);
   if (context === undefined) {

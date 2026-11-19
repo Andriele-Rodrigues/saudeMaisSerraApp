@@ -196,10 +196,11 @@ Alguns detalhes importantes dessa estrutura:
 | `prestador_estabelecimento` | 3 colunas | `id_prestador`, `id_estabelecimento` | `id_prestador` (ref. `prestador`), `id_estabelecimento` (ref. `estabelecimento`) |
 | `agendamento` | 10 colunas | `id_agendamento` | `id_paciente` (ref. `paciente`), `id_prestador` (ref. `prestador`), `id_estabelecimento` (ref. `estabelecimento`) |
 | `avaliacao` | 7 colunas | `id_avaliacao` | `id_agendamento` (ref. `agendamento`), `id_paciente` (ref. `paciente`), `id_prestador` (ref. `prestador`) |
+| `favorito` | 4 colunas | `id_favorito` | `id_paciente` (ref. `paciente`), `id_estabelecimento` (ref. `estabelecimento`) |
 
-- **Mínimo de 4 tabelas:** 7 tabelas criadas.
+- **Mínimo de 4 tabelas:** 8 tabelas criadas.
 - **Mínimo de 3 colunas por tabela:** todas têm entre 3 e 11 colunas.
-- **Relação entre ao menos 2 tabelas:** 9 chaves estrangeiras relacionando as tabelas.
+- **Relação entre ao menos 2 tabelas:** 11 chaves estrangeiras relacionando as tabelas.
 
 ## 5. Inicialização e controle de versão (`migrations.ts`)
 

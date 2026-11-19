@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { TIPOS_PRESTADOR } from '@/src/data/mockData';
+
+const TIPOS_PRESTADOR = ['Todos', 'Médicos', 'Clínicas', 'Hospitais', 'Laboratórios', 'Consultórios'];
 
 const ListItem = ({ item, onPress }: { item: string; onPress: () => void }) => (
   <TouchableOpacity style={styles.itemContainer} onPress={onPress}>

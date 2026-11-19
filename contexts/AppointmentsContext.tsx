@@ -1,65 +1,57 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import {
+  Agendamento,
+  atualizarAgendamentosRealizados,
+  cancelarAgendamento,
+  confirmarAgendamento,
+  listarAgendamentos,
+  NovoAgendamento,
+} from '@/src/database/repositories/agendamentoRepository';
+import { ID_PACIENTE_PADRAO } from '@/src/database/repositories/pacienteRepository';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
-// Define a estrutura de um agendamento
-export type Appointment = {
-  id: string;
-  clinicName?: string;
-  doctor: string;
-  specialty: string;
-  address?: string;
-  phone?: string;
-  date: string;
-  time: string;
-};
-
-// Define os valores que o nosso contexto irá fornecer
 type AppointmentsContextType = {
-  appointments: Appointment[];
-  addAppointment: (appointment: Omit<Appointment, 'id'>) => void;
-  removeAppointment: (id: string) => void;
+  appointments: Agendamento[];
+  loading: boolean;
+  addAppointment: (dados: Omit<NovoAgendamento, 'paciente'>) => Promise<void>;
+  cancelAppointment: (id: number, motivo: string) => Promise<void>;
+  reload: () => Promise<void>;
 };
 
-// Dados iniciais para o aplicativo
-const initialAppointments: Appointment[] = [
-    {
-        id: '1',
-        clinicName: 'Clínica Bem Viver',
-        doctor: 'Dra. Ana Souza',
-        specialty: 'Cardiologia',
-        address: 'Rua das Flores, 123, Centro',
-        phone: '(54) 99999-1111',
-        date: '25/10/2025',
-        time: '10:30',
-    },
-];
-
-// Cria o contexto
 const AppointmentsContext = createContext<AppointmentsContextType | undefined>(undefined);
 
-// Cria o Provedor que irá "abraçar" o nosso aplicativo
+// Mantém em memória apenas uma cópia da lista; a fonte dos dados é o SQLite.
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const db = useSQLiteContext();
+  const [appointments, setAppointments] = useState<Agendamento[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Função para adicionar um novo agendamento
-  const addAppointment = (newAppointmentData: Omit<Appointment, 'id'>) => {
-    const newAppointment: Appointment = {
-      id: Date.now().toString(), // Gera um ID único
-      ...newAppointmentData,
-    };
-    setAppointments(prev => [...prev, newAppointment]);
+  const reload = useCallback(async () => {
+    await atualizarAgendamentosRealizados(db);
+    setAppointments(await listarAgendamentos(db, ID_PACIENTE_PADRAO));
+    setLoading(false);
+  }, [db]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  // Lança ConflitoHorarioError se o horário já estiver ocupado.
+  const addAppointment = async (dados: Omit<NovoAgendamento, 'paciente'>) => {
+    await confirmarAgendamento(db, { ...dados, paciente: ID_PACIENTE_PADRAO });
+    await reload();
   };
 
-  // Função para remover um agendamento
-  const removeAppointment = (id: string) => {
-    setAppointments(prev => prev.filter(app => app.id !== id));
+  const cancelAppointment = async (id: number, motivo: string) => {
+    await cancelarAgendamento(db, id, motivo);
+    await reload();
   };
 
-  const value = { appointments, addAppointment, removeAppointment };
+  const value = { appointments, loading, addAppointment, cancelAppointment, reload };
 
   return <AppointmentsContext.Provider value={value}>{children}</AppointmentsContext.Provider>;
 };
 
-// Hook personalizado para usar o contexto facilmente nas telas
 export const useAppointments = () => {
   const context = useContext(AppointmentsContext);
   if (context === undefined) {

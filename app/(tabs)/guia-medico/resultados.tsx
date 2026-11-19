@@ -1,9 +1,15 @@
-import { Medico, MEDICOS, Prestador, PRESTADORES } from '@/src/data/mockData';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import {
+  listarEstabelecimentos,
+  listarMedicos,
+  ROTULO_TIPO,
+} from '@/src/database/repositories/prestadorRepository';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Linking,
@@ -14,32 +20,43 @@ import {
   View
 } from 'react-native';
 
-// --- TIPO UNIFICADO PARA EXIBIÇÃO ---
-// Um tipo comum que representa qualquer item que pode ser exibido na lista de resultados
+// Tipo comum para qualquer item exibido na lista de resultados (médico ou estabelecimento)
 type ResultadoItem = {
-  id: string;
+  chave: string;
+  id: number;
   nome: string;
-  tipo: 'Médico' | 'Clínica' | 'Hospital' | 'Laboratório';
-  especialidades: string[]; 
+  tipo: string;
+  especialidades: string[];
   endereco: string;
   telefone: string;
-  foto: string;
-  coords?: { latitude: number; longitude: number }; // A propriedade 'coords' é opcional
-  originalItem: Medico | Prestador; 
+  latitude: number | null;
+  longitude: number | null;
+  detalhe?: string;
 };
+
+// Converte o filtro escolhido na tela anterior para o rótulo do tipo
+const FILTRO_TIPO: Record<string, string> = {
+  'Médicos': 'Médico',
+  'Clínicas': ROTULO_TIPO.clinica,
+  'Hospitais': ROTULO_TIPO.hospital,
+  'Laboratórios': ROTULO_TIPO.laboratorio,
+  'Consultórios': ROTULO_TIPO.consultorio,
+};
+
+const abrirMapa = (item: ResultadoItem) =>
+  item.latitude !== null && item.longitude !== null
+    ? Linking.openURL(`https://maps.google.com/maps?q=${item.latitude},${item.longitude}`).catch(() => Alert.alert("Erro", "Não foi possível abrir o mapa."))
+    : Alert.alert("Localização indisponível");
+
+const ligar = (item: ResultadoItem) =>
+  Linking.openURL(`tel:${item.telefone}`).catch(() => Alert.alert("Erro", "Não foi possível realizar a chamada."));
 
 // --- COMPONENTES DOS CARDS ---
 
 const MedicoCard = ({ item }: { item: ResultadoItem }) => {
   const router = useRouter();
-  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
-  const isSaved = isFavorite(item.id);
+  const handleSchedule = () => router.push({ pathname: '/guia-medico/agendar-consulta', params: { medicoId: String(item.id) } });
 
-  const handleSave = () => isSaved ? removeFavorite(item.id) : addFavorite(item.originalItem);
-  const handleCall = () => Linking.openURL(`tel:${item.telefone}`).catch(() => Alert.alert("Erro", "Não foi possível realizar a chamada."));
-  const handleMap = () => item.coords ? Linking.openURL(`http://maps.google.com/maps?q=${item.coords.latitude},${item.coords.longitude}`).catch(() => Alert.alert("Erro", "Não foi possível abrir o mapa.")) : Alert.alert("Localização Indisponível", "Este médico não possui uma localização principal definida.");
-  const handleSchedule = () => router.push({ pathname: '/guia-medico/agendar-consulta', params: { medicoId: item.id } });
-  
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -47,17 +64,15 @@ const MedicoCard = ({ item }: { item: ResultadoItem }) => {
             <Text style={styles.cardTitle}>{item.nome}</Text>
             <Text style={styles.cardSubtitle}>{item.especialidades.join(' / ')}</Text>
             <Text style={styles.cardText}>{item.endereco}</Text>
+            {item.detalhe && <Text style={styles.cardText}>{item.detalhe}</Text>}
         </View>
-        <TouchableOpacity onPress={handleSave}>
-             <Ionicons name={isSaved ? "star" : "star-outline"} size={28} color="#FFD700" />
-        </TouchableOpacity>
       </View>
       <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => ligar(item)}>
             <Ionicons name="call" size={22} color="#00A896" />
             <Text style={styles.actionText}>Ligar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleMap}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => abrirMapa(item)}>
             <Ionicons name="map-outline" size={22} color="#00A896" />
             <Text style={styles.actionText}>Rotas</Text>
         </TouchableOpacity>
@@ -74,18 +89,15 @@ const PrestadorCard = ({ item }: { item: ResultadoItem }) => {
     const router = useRouter();
     const { addFavorite, removeFavorite, isFavorite } = useFavorites();
     const isSaved = isFavorite(item.id);
-
-    const handleSave = () => isSaved ? removeFavorite(item.id) : addFavorite(item.originalItem);
-    const handleCall = () => Linking.openURL(`tel:${item.telefone}`).catch(() => Alert.alert("Erro", "Não foi possível realizar a chamada."));
-    const handleMap = () => item.coords ? Linking.openURL(`http://maps.google.com/maps?q=${item.coords.latitude},${item.coords.longitude}`).catch(() => Alert.alert("Erro", "Não foi possível abrir o mapa.")) : Alert.alert("Localização Indisponível");
+    const handleSave = () => (isSaved ? removeFavorite(item.id) : addFavorite(item.id));
 
     return (
         <View style={styles.card}>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/guia-medico/detalhes', params: { id: item.id } })}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/guia-medico/detalhes', params: { id: String(item.id) } })}>
                 <View style={styles.cardHeader}>
                     <View style={styles.cardContent}>
                         <Text style={styles.cardTitle}>{item.nome}</Text>
-                        <Text style={styles.cardSubtitle}>{item.especialidades.join(' / ')}</Text>
+                        <Text style={styles.cardSubtitle}>{item.tipo} · {item.especialidades.join(' / ')}</Text>
                         <Text style={styles.cardText}>{item.endereco}</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={28} color="#ccc" />
@@ -96,11 +108,11 @@ const PrestadorCard = ({ item }: { item: ResultadoItem }) => {
                     <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={22} color="#00A896" />
                     <Text style={styles.actionText}>{isSaved ? "Salvo" : "Salvar"}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
+                <TouchableOpacity style={styles.actionButton} onPress={() => ligar(item)}>
                     <Ionicons name="call" size={22} color="#00A896" />
                     <Text style={styles.actionText}>Ligar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleMap}>
+                <TouchableOpacity style={styles.actionButton} onPress={() => abrirMapa(item)}>
                     <Ionicons name="map-outline" size={22} color="#00A896" />
                     <Text style={styles.actionText}>Rotas</Text>
                 </TouchableOpacity>
@@ -109,58 +121,61 @@ const PrestadorCard = ({ item }: { item: ResultadoItem }) => {
     );
 };
 
-
 export default function ResultadosScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const [filteredResults, setFilteredResults] = useState<ResultadoItem[]>([]);
+  const db = useSQLiteContext();
+  const { prestador, especialidade } = useLocalSearchParams<{ prestador?: string; especialidade?: string }>();
+  const [filteredResults, setFilteredResults] = useState<ResultadoItem[] | null>(null);
 
   useEffect(() => {
-    // --- LÓGICA CORRIGIDA ---
-    // A lógica para encontrar o local principal foi melhorada para ser mais segura
-    const medicosFormatados: ResultadoItem[] = MEDICOS.map(medico => {
-      const localPrincipal = PRESTADORES.find(p => p.id === medico.locaisAtendimentoIds[0]);
-      return {
+    let ativo = true;
+    (async () => {
+      const [medicos, estabelecimentos] = await Promise.all([listarMedicos(db), listarEstabelecimentos(db)]);
+
+      const medicosFormatados: ResultadoItem[] = medicos.map(medico => ({
+        chave: `m${medico.id}`,
         id: medico.id,
         nome: medico.nome,
         tipo: 'Médico',
-        especialidades: medico.especialidades,
-        endereco: medico.endereco || localPrincipal?.endereco || 'Endereço não informado',
-        telefone: medico.telefone || localPrincipal?.telefone || 'Telefone não informado',
-        foto: medico.foto,
-        coords: localPrincipal?.coords, // Coords é opcional e pode ser undefined
-        originalItem: medico,
-      };
-    });
+        especialidades: [medico.especialidade],
+        endereco: medico.endereco ?? 'Endereço não informado',
+        telefone: medico.telefone ?? '',
+        latitude: medico.latitude,
+        longitude: medico.longitude,
+        detalhe: medico.qtdAvaliacoes > 0
+          ? `Nota ${Number(medico.mediaAvaliacao).toFixed(1)} (${medico.qtdAvaliacoes} avaliações)`
+          : undefined,
+      }));
 
-    const prestadoresFormatados: ResultadoItem[] = PRESTADORES.map(prestador => ({
-      ...prestador,
-      foto: `https://placehold.co/100x100/00A896/FFFFFF?text=${prestador.nome.substring(0,2)}`,
-      originalItem: prestador,
-    }));
+      const estabelecimentosFormatados: ResultadoItem[] = estabelecimentos.map(est => ({
+        chave: `e${est.id}`,
+        id: est.id,
+        nome: est.nome,
+        tipo: ROTULO_TIPO[est.tipo],
+        especialidades: est.especialidades,
+        endereco: est.endereco ?? 'Endereço não informado',
+        telefone: est.telefone ?? '',
+        latitude: est.latitude,
+        longitude: est.longitude,
+      }));
 
-    let allProviders = [...medicosFormatados, ...prestadoresFormatados];
+      let resultados = [...medicosFormatados, ...estabelecimentosFormatados];
+      const tipoFiltro = FILTRO_TIPO[String(prestador || 'Todos')];
+      const especialidadeFiltro = String(especialidade || 'Todas');
 
-    const tipoFiltro = String(params.prestador || 'Todos').replace(/s$/, '');
-    const especialidadeFiltro = String(params.especialidade || 'Todas');
-
-    if (tipoFiltro !== 'Todo') {
-      allProviders = allProviders.filter(provider => provider.tipo.toLowerCase() === tipoFiltro.toLowerCase());
-    }
-
-    if (especialidadeFiltro !== 'Todas') {
-      allProviders = allProviders.filter(provider => provider.especialidades.includes(especialidadeFiltro));
-    }
-    
-    setFilteredResults(allProviders);
-  }, [params]);
-  
-  const renderItem = ({ item }: { item: ResultadoItem }) => {
-      if (item.tipo === 'Médico') {
-          return <MedicoCard item={item} />;
+      if (tipoFiltro) {
+        resultados = resultados.filter(item => item.tipo === tipoFiltro);
       }
-      return <PrestadorCard item={item} />;
-  };
+      if (especialidadeFiltro !== 'Todas') {
+        resultados = resultados.filter(item => item.especialidades.includes(especialidadeFiltro));
+      }
+      if (ativo) setFilteredResults(resultados);
+    })();
+    return () => { ativo = false; };
+  }, [db, prestador, especialidade]);
+
+  const renderItem = ({ item }: { item: ResultadoItem }) =>
+    item.tipo === 'Médico' ? <MedicoCard item={item} /> : <PrestadorCard item={item} />;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,21 +186,29 @@ export default function ResultadosScreen() {
 
       <View style={styles.filterInfo}>
         <Text style={styles.filterText}>
-          Exibindo resultados para: <Text style={{ fontWeight: 'bold' }}>{params.prestador}</Text> em <Text style={{ fontWeight: 'bold' }}>{params.especialidade}</Text>
+          Exibindo resultados para: <Text style={{ fontWeight: 'bold' }}>{prestador ?? 'Todos'}</Text> em <Text style={{ fontWeight: 'bold' }}>{especialidade ?? 'Todas'}</Text>
         </Text>
       </View>
 
-      <FlatList
-        data={filteredResults}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 20 }}
-        ListEmptyComponent={<View style={styles.emptyContainer}><Text style={styles.emptyText}>Nenhum resultado encontrado.</Text></View>}
-      />
+      {filteredResults === null ? (
+        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+      ) : (
+        <FlatList
+          data={filteredResults}
+          keyExtractor={(item) => item.chave}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 20 }}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Nenhum resultado encontrado.</Text>
+              <Text style={styles.cardText}>Tente outra especialidade ou outro tipo de prestador.</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f2f5' },

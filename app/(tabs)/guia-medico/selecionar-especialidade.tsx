@@ -1,9 +1,10 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ESPECIALIDADES } from '@/src/data/mockData';
+import { listarEspecialidades } from '@/src/database/repositories/prestadorRepository';
+import { useSQLiteContext } from 'expo-sqlite';
 
 const ListItem = ({ item, onPress }: { item: string; onPress: () => void }) => (
   <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
@@ -16,6 +17,12 @@ export default function SelecionarEspecialidadeScreen() {
   const router = useRouter();
   // Recebe o parâmetro do prestador que já estava selecionado
   const { prestadorAtual } = useLocalSearchParams();
+  const db = useSQLiteContext();
+  const [especialidades, setEspecialidades] = useState<string[]>([]);
+
+  useEffect(() => {
+    listarEspecialidades(db).then(setEspecialidades);
+  }, [db]);
 
   const handleSelect = (especialidade: string) => {
     // Usamos o caminho absoluto '/guia-medico' para garantir que voltamos
@@ -32,7 +39,7 @@ export default function SelecionarEspecialidadeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={['Todas', ...ESPECIALIDADES]}
+        data={['Todas', ...especialidades]}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
           <ListItem item={item} onPress={() => handleSelect(item)} />
