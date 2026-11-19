@@ -199,7 +199,7 @@ Alguns detalhes importantes dessa estrutura:
 
 - **Mínimo de 4 tabelas:** 7 tabelas criadas.
 - **Mínimo de 3 colunas por tabela:** todas têm entre 3 e 11 colunas.
-- **Relação entre ao menos 2 tabelas:** 8 chaves estrangeiras relacionando as tabelas.
+- **Relação entre ao menos 2 tabelas:** 9 chaves estrangeiras relacionando as tabelas.
 
 ## 5. Inicialização e controle de versão (`migrations.ts`)
 

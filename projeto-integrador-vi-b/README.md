@@ -63,13 +63,14 @@ Estabelecimentos de pequeno e médio porte que ganham visibilidade digital e pas
 
 O aplicativo possui uma tela dedicada (`app/(tabs)/guia-medico/equipe.tsx`) exibindo o nome completo de todos os integrantes, conforme exigido na Etapa 1.
 
-| Nome completo | 
-|---|---|
+| Nome completo |
+|---|
 | Andriele Rodrigues |
-| Bruno Kunzler Borges|
-| Felipe Vicentini | 
+| Bruno Kunzler Borges |
+| Felipe Vicentini |
 | Jeferson Rodrigues Duarte |
 | Matheus Feijó Barp |
+
 ---
 
 ## 5. Origem dos dados
