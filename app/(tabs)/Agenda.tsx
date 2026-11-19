@@ -113,6 +113,16 @@ export default function AgendaScreen() {
           <Icon name="calendar-clock" size={20} color="#008584" />
           <Text style={styles.cardTime}>{data} às {hora}</Text>
         </View>
+
+        {item.status === 'realizado' && !item.avaliado && (
+          <TouchableOpacity
+            style={styles.avaliarButton}
+            onPress={() => router.push({ pathname: '/avaliar', params: { id: String(item.id) } })}
+          >
+            <Icon name="star-outline" size={18} color="#fff" />
+            <Text style={styles.avaliarText}>Avaliar</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -201,6 +211,11 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 10, fontSize: 15, color: '#888' },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginHorizontal: 20, marginTop: 20 },
   status: { fontSize: 13, fontWeight: 'bold' },
+  avaliarButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start',
+    backgroundColor: '#00A896', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, marginTop: 12,
+  },
+  avaliarText: { color: '#fff', fontWeight: 'bold', marginLeft: 6 },
   card: {
     backgroundColor: '#fff',
     padding: 15,

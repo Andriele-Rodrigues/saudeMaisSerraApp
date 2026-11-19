@@ -91,6 +91,24 @@ export default function TabLayout() {
           href: null, 
         }}
       />
+      <Tabs.Screen
+        name="equipe-projeto"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="avaliar"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="indicadores"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
     </FavoritesProvider>
     
