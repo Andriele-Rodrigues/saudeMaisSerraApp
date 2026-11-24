@@ -6,6 +6,8 @@ Curso de Análise e Desenvolvimento de Sistemas
 
 Aplicativo móvel para gestão de serviços de saúde na região da Serra Gaúcha, com **banco de dados local (SQLite)** que funciona integralmente **sem conexão com a internet**.
 
+▶ **Vídeo de demonstração:** <https://youtu.be/1mEwRaVzsP8>
+
 ---
 
 ## Índice da documentação
@@ -80,3 +82,11 @@ O aplicativo possui uma tela dedicada (`app/(tabs)/guia-medico/equipe.tsx`) exib
 | Portal Brasileiro de Dados Abertos | Complemento de dados de unidades públicas de saúde | <https://dados.gov.br/dataset> |
 
 Como o requisito do projeto exige que o banco funcione **localmente, mesmo sem conexão**, essas bases **não são consultadas em tempo de execução**. Elas são baixadas e tratadas uma única vez durante o desenvolvimento, filtradas para os municípios da Serra e embarcadas no aplicativo como carga inicial (*seed*) do SQLite. O detalhamento desse processo está em [Banco de dados local](docs/03-banco-local-sqlite.md).
+
+---
+
+## 6. Demonstração do software
+
+Vídeo de demonstração da versão atual do aplicativo:
+
+**<https://youtu.be/1mEwRaVzsP8>**
