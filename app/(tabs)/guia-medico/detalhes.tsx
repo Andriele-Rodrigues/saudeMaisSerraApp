@@ -1,7 +1,8 @@
-import { PRESTADORES, Prestador } from '@/app/api/mockData';
+import { buscarEstabelecimento, Estabelecimento, ROTULO_TIPO } from '@/src/database/repositories/prestadorRepository';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Linking, SafeAreaView, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,18 +10,16 @@ import { ActivityIndicator, Alert, Image, Linking, SafeAreaView, ScrollView, Sha
 // Esta tela é dedicada apenas a PRESTADORES (Clínicas, Hospitais, etc.)
 
 export default function DetalhesScreen() {
-  const { id } = useLocalSearchParams();
-
-  const [prestador, setPrestador] = useState<Prestador | null>(null);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const db = useSQLiteContext();
+  const [prestador, setPrestador] = useState<Estabelecimento | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id && typeof id === 'string') {
-      const foundItem = PRESTADORES.find(p => p.id === id);
-      setPrestador(foundItem || null);
-    }
-    setLoading(false);
-  }, [id]);
+    buscarEstabelecimento(db, Number(id))
+      .then(setPrestador)
+      .finally(() => setLoading(false));
+  }, [db, id]);
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.centered} />;
@@ -44,12 +43,12 @@ export default function DetalhesScreen() {
 
 // --- COMPONENTES DE LAYOUT ---
 
-const Header = ({ prestador }: { prestador: Prestador }) => {
+const Header = ({ prestador }: { prestador: Estabelecimento }) => {
     const router = useRouter();
     const handleShare = async () => {
         try {
             await Share.share({ message: `Confira ${prestador.nome} no Saúde Mais Serra!` });
-        } catch (error) {
+        } catch {
             Alert.alert("Erro", "Não foi possível compartilhar.");
         }
     };
@@ -66,7 +65,7 @@ const Header = ({ prestador }: { prestador: Prestador }) => {
     );
 };
 
-const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
+const PrestadorDetails = ({ prestador }: { prestador: Estabelecimento }) => {
     const router = useRouter();
     const { addFavorite, removeFavorite, isFavorite } = useFavorites();
     const isSaved = isFavorite(prestador.id);
@@ -75,7 +74,7 @@ const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
         if (isSaved) {
             removeFavorite(prestador.id);
         } else {
-            addFavorite(prestador);
+            addFavorite(prestador.id);
         }
     };
     
@@ -85,7 +84,7 @@ const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
     
     // --- NOTA IMPORTANTE ---
     // Para o mapa funcionar, substitua 'YOUR_API_KEY' pela sua chave da API Google Maps Static.
-    const mapImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${prestador.coords.latitude},${prestador.coords.longitude}&zoom=15&size=600x300&markers=color:red%7C${prestador.coords.latitude},${prestador.coords.longitude}&key=YOUR_API_KEY`;
+    const mapImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${prestador.latitude},${prestador.longitude}&zoom=15&size=600x300&markers=color:red%7C${prestador.latitude},${prestador.longitude}&key=YOUR_API_KEY`;
 
     return (
         <ScrollView style={styles.prestadorScrollView}>
@@ -98,7 +97,10 @@ const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
             </View>
             <View style={styles.prestadorInfoCard}>
                 <Text style={styles.prestadorTitle}>{prestador.nome}</Text>
+                <Text style={styles.prestadorSubtitle}>{ROTULO_TIPO[prestador.tipo]}</Text>
                 <Text style={styles.prestadorSubtitle}>{prestador.especialidades.join(' / ')}</Text>
+                <Text style={styles.prestadorSubtitle}>{prestador.endereco}</Text>
+                <Text style={styles.prestadorSubtitle}>{prestador.telefone}</Text>
             </View>
 
             <View style={styles.actionGrid}>
@@ -108,7 +110,7 @@ const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
                     label={isSaved ? "Salvo" : "Salvar"} 
                     onPress={handleSave} 
                 />
-                <GridButton icon="map-outline" label="Rotas" onPress={() => Linking.openURL(`http://maps.google.com/maps?q=${prestador.coords.latitude},${prestador.coords.longitude}`)} />
+                <GridButton icon="map-outline" label="Rotas" onPress={() => Linking.openURL(`http://maps.google.com/maps?q=${prestador.latitude},${prestador.longitude}`)} />
                 <GridButton icon="calendar-outline" label="Agenda" onPress={() => handleAction('Agenda')} />
                 <GridButton icon="document-text-outline" label="Planos" onPress={() => handleAction('Planos')} />
                 <GridButton
@@ -116,7 +118,7 @@ const PrestadorDetails = ({ prestador }: { prestador: Prestador }) => {
                     label="Equipe"
                     onPress={() => router.push({
                         pathname: '/guia-medico/equipe',
-                        params: { endereco: prestador.endereco },
+                        params: { id: String(prestador.id) },
                     })}
                 />
             </View>

@@ -115,17 +115,28 @@ flowchart TD
 
 ---
 
-## 6. Telas a serem desenhadas no VI-B
+## 6. Telas implementadas
 
-As telas acima vêm do protótipo validado no Projeto Integrador IV-A. Os requisitos novos desta etapa exigem cinco telas adicionais:
+As telas acima vêm do protótipo validado no Projeto Integrador IV-A. A tabela abaixo mostra as telas que existem no aplicativo nesta entrega e o arquivo de cada uma:
 
-| Tela | Finalidade | História |
+| Tela | Finalidade | Arquivo |
 |---|---|---|
-| Avaliar atendimento | Nota de 1 a 5 e comentário, liberados após a data da consulta | HU04 |
-| Painel de indicadores | Gráficos gerados a partir das consultas de agregação no banco local | HU05 |
-| Equipe do projeto | Nome completo dos integrantes do grupo | Requisito da disciplina |
-| Exames | Acompanhamento do status dos exames solicitados | F07 |
-| Favoritos | Prestadores e estabelecimentos marcados | F09 |
+| Início | Acesso ao Guia Médico, exames, medicação e favoritos | `app/(tabs)/index.tsx` |
+| Guia Médico (filtros) | Escolha do tipo de prestador e da especialidade | `app/(tabs)/guia-medico/index.tsx` |
+| Selecionar tipo de prestador | Lista de tipos (médicos, clínicas, hospitais, laboratórios, consultórios) | `app/(tabs)/guia-medico/selecionar-prestador.tsx` |
+| Selecionar especialidade | Lista de especialidades lida do banco | `app/(tabs)/guia-medico/selecionar-especialidade.tsx` |
+| Resultados da busca | Médicos e estabelecimentos filtrados | `app/(tabs)/guia-medico/resultados.tsx` |
+| Detalhes do prestador | Endereço, contato, rotas, favorito e equipe | `app/(tabs)/guia-medico/detalhes.tsx` |
+| Equipe médica | Profissionais que atendem no estabelecimento | `app/(tabs)/guia-medico/equipe.tsx` |
+| Agendar consulta ou exame | Escolha de dia e horário, com validação de conflito | `app/(tabs)/guia-medico/agendar-consulta.tsx` |
+| Minha Agenda | Próximos agendamentos, histórico e cancelamento | `app/(tabs)/Agenda.tsx` |
+| Avaliar atendimento | Nota de 1 a 5 e comentário para atendimentos realizados (HU04) | `app/(tabs)/avaliar.tsx` |
+| Painel de indicadores | Gráficos gerados a partir do banco local (HU05) | `app/(tabs)/indicadores.tsx` |
+| Favoritos | Estabelecimentos marcados (F09) | `app/(tabs)/favoritos.tsx` |
+| Perfil | Dados do usuário local e acesso a favoritos, indicadores e equipe | `app/(tabs)/Profile.tsx` |
+| Equipe do projeto | Nome completo dos integrantes do grupo | `app/(tabs)/equipe-projeto.tsx` |
+| Exames | Lista de exames (dados fixos na tela, ainda sem banco) | `app/(tabs)/exames.tsx` |
+| Medicação | Lista de medicamentos (dados fixos na tela, ainda sem banco) | `app/(tabs)/medicacao.tsx` |
 
 ---
 

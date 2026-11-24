@@ -1,27 +1,23 @@
-import { FavoriteItem, useFavorites } from '@/contexts/FavoritesContext';
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { Estabelecimento, ROTULO_TIPO } from '@/src/database/repositories/prestadorRepository';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Card para exibir um item favoritado (agora lida com Médicos e Prestadores)
-const FavoriteCard = ({ item, onRemove }: { item: FavoriteItem; onRemove: () => void }) => {
+// Card de um estabelecimento favoritado
+const FavoriteCard = ({ item, onRemove }: { item: Estabelecimento; onRemove: () => void }) => {
     const router = useRouter();
     
-    // Verifica se o item é um prestador para decidir para onde navegar
-    const isPrestador = 'tipo' in item;
     const onPress = () => {
-        // Apenas navega para detalhes se for um Prestador (Clínica, Hospital, etc.)
-        if (isPrestador) {
-            router.push({ pathname: '/guia-medico/detalhes', params: { id: item.id } });
-        }
+        router.push({ pathname: '/guia-medico/detalhes', params: { id: String(item.id) } });
     };
 
     return (
-        <TouchableOpacity style={styles.card} onPress={onPress} disabled={!isPrestador}>
+        <TouchableOpacity style={styles.card} onPress={onPress}>
             <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>{item.nome}</Text>
-                <Text style={styles.cardSubtitle}>{item.especialidades.join(' / ')}</Text>
+                <Text style={styles.cardSubtitle}>{ROTULO_TIPO[item.tipo]}{item.ativo ? '' : ' · indisponível'}</Text>
                 <Text style={styles.cardText}>{item.endereco}</Text>
             </View>
             <TouchableOpacity onPress={onRemove} style={styles.removeButton}>
@@ -48,13 +44,13 @@ export default function FavoritosScreen() {
 
             <FlatList
                 data={favorites}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => <FavoriteCard item={item} onRemove={() => removeFavorite(item.id)} />}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="star-outline" size={60} color="#ccc" />
                         <Text style={styles.emptyText}>Nenhum favorito salvo.</Text>
-                        <Text style={styles.emptySubtext}>Salve prestadores e médicos para os ver aqui.</Text>
+                        <Text style={styles.emptySubtext}>Salve clínicas, hospitais e laboratórios para vê-los aqui.</Text>
                     </View>
                 }
                 contentContainerStyle={{ padding: 20 }}

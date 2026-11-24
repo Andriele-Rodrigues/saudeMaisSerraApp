@@ -1,45 +1,54 @@
-
+import { useAppointments } from '@/contexts/AppointmentsContext';
+import { separarDataBanco } from '@/src/database/datas';
+import type { Agendamento, StatusAgendamento } from '@/src/database/repositories/agendamentoRepository';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Button,
-  FlatList,
   Modal,
   SafeAreaView,
+  SectionList,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useAppointments } from '../../contexts/AppointmentsContext';
 
-// Define a estrutura de um agendamento para o TypeScript
-type Appointment = {
-  id: string;
-  clinicName?: string;
-  doctor: string;
-  specialty: string;
-  address?: string;
-  phone?: string;
-  date: string;
-  time: string;
+const ROTULO_STATUS: Record<StatusAgendamento, string> = {
+  agendado: 'Agendado',
+  realizado: 'Realizado',
+  cancelado: 'Cancelado',
+  faltou: 'Não compareceu',
+};
+
+const COR_STATUS: Record<StatusAgendamento, string> = {
+  agendado: '#008584',
+  realizado: '#2E7D32',
+  cancelado: '#E74C3C',
+  faltou: '#F39C12',
 };
 
 export default function AgendaScreen() {
-  // Pega a lista de agendamentos e a função de remover do nosso estado global
-  const { appointments, removeAppointment } = useAppointments();
+  const { appointments, loading, cancelAppointment } = useAppointments();
   const router = useRouter();
 
-  // Estados para controlar o modal de cancelamento
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Agendamento | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  // Funções para abrir e fechar o modal
-  const handleOpenModal = (appointment: Appointment) => {
+  // Futuros: ainda agendados. Histórico: realizados, cancelados e faltas (mais recentes primeiro).
+  const futuros = appointments.filter(a => a.status === 'agendado');
+  const historico = appointments.filter(a => a.status !== 'agendado').reverse();
+  const sections = [
+    { title: 'Próximos agendamentos', data: futuros },
+    { title: 'Realizados e cancelados', data: historico },
+  ];
+
+  const handleOpenModal = (appointment: Agendamento) => {
     setSelectedAppointment(appointment);
     setModalVisible(true);
   };
@@ -50,85 +59,102 @@ export default function AgendaScreen() {
     setCancelReason('');
   };
 
-  // --- LÓGICA CORRIGIDA AQUI ---
-  const handleConfirmCancel = () => {
-    // Valida se o motivo foi preenchido
+  const handleConfirmCancel = async () => {
     if (!cancelReason.trim()) {
-      Alert.alert('Erro', 'Por favor, informe o motivo do cancelamento.');
+      Alert.alert('Atenção', 'Por favor, informe o motivo do cancelamento.');
       return;
     }
-
-    // Remove o agendamento do estado global
     if (selectedAppointment) {
-      removeAppointment(selectedAppointment.id);
+      await cancelAppointment(selectedAppointment.id, cancelReason.trim());
     }
-
-    // Fecha o modal ANTES de mostrar o alerta de sucesso
     handleCloseModal();
     Alert.alert('Sucesso', 'Agendamento cancelado com sucesso!');
   };
 
-  // Componente para renderizar cada card de agendamento
-  const renderAppointmentCard = ({ item }: { item: Appointment }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.specialty}</Text>
-        <TouchableOpacity onPress={() => handleOpenModal(item)}>
-          <Icon name="close-circle-outline" size={26} color="#E74C3C" />
-        </TouchableOpacity>
-      </View>
-      {item.clinicName && (
-        <View style={styles.infoRow}>
-          <Icon name="hospital-building" size={16} color="#555" />
-          <Text style={styles.cardText}>{item.clinicName}</Text>
+  const renderAppointmentCard = ({ item }: { item: Agendamento }) => {
+    const { data, hora } = separarDataBanco(item.inicio);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{item.especialidade}</Text>
+          {item.status === 'agendado' ? (
+            <TouchableOpacity onPress={() => handleOpenModal(item)} accessibilityLabel="Cancelar agendamento">
+              <Icon name="close-circle-outline" size={26} color="#E74C3C" />
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.status, { color: COR_STATUS[item.status] }]}>{ROTULO_STATUS[item.status]}</Text>
+          )}
         </View>
-      )}
-      <View style={styles.infoRow}>
-        <Icon name="doctor" size={16} color="#555" />
-        <Text style={styles.cardText}>{item.doctor}</Text>
-      </View>
-      {item.address && (
+
+        {item.estabelecimento && (
+          <View style={styles.infoRow}>
+            <Icon name="hospital-building" size={16} color="#555" />
+            <Text style={styles.cardText}>{item.estabelecimento}</Text>
+          </View>
+        )}
         <View style={styles.infoRow}>
-          <Icon name="map-marker-outline" size={16} color="#555" />
-          <Text style={styles.cardText}>{item.address}</Text>
+          <Icon name="doctor" size={16} color="#555" />
+          <Text style={styles.cardText}>{item.medico}</Text>
         </View>
-      )}
-      {item.phone && (
-       <View style={styles.infoRow}>
-        <Icon name="phone-outline" size={16} color="#555" />
-        <Text style={styles.cardText}>{item.phone}</Text>
+        {item.endereco && (
+          <View style={styles.infoRow}>
+            <Icon name="map-marker-outline" size={16} color="#555" />
+            <Text style={styles.cardText}>{item.endereco}</Text>
+          </View>
+        )}
+        {item.telefone && (
+         <View style={styles.infoRow}>
+          <Icon name="phone-outline" size={16} color="#555" />
+          <Text style={styles.cardText}>{item.telefone}</Text>
+        </View>
+        )}
+
+        <View style={styles.timeContainer}>
+          <Icon name="calendar-clock" size={20} color="#008584" />
+          <Text style={styles.cardTime}>{data} às {hora}</Text>
+        </View>
+
+        {item.status === 'realizado' && !item.avaliado && (
+          <TouchableOpacity
+            style={styles.avaliarButton}
+            onPress={() => router.push({ pathname: '/avaliar', params: { id: String(item.id) } })}
+          >
+            <Icon name="star-outline" size={18} color="#fff" />
+            <Text style={styles.avaliarText}>Avaliar</Text>
+          </TouchableOpacity>
+        )}
       </View>
-      )}
-      <View style={styles.timeContainer}>
-        <Icon name="calendar-clock" size={20} color="#008584" />
-        <Text style={styles.cardTime}>{item.date} às {item.time}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
  return (
     <SafeAreaView style={styles.container}>
-      {/* Cabeçalho da tela */}
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
           <Icon name="arrow-left" size={28} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meus Agendamentos</Text>
-        <TouchableOpacity onPress={() => Alert.alert('Busca', 'Funcionalidade de busca a ser implementada.')} style={styles.headerIcon}>
-          <Icon name="magnify" size={28} color="#333" />
-        </TouchableOpacity>
+        <View style={styles.headerIcon} />
       </View>
 
-      {/* Lista de agendamentos */}
-      <FlatList
-        data={appointments}
-        keyExtractor={(item) => item.id}
-        renderItem={renderAppointmentCard}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhum agendamento encontrado.</Text>}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderAppointmentCard}
+          renderSectionHeader={({ section }) => (
+            <View>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              {section.data.length === 0 && <Text style={styles.emptyText}>Nenhum agendamento.</Text>}
+            </View>
+          )}
+          stickySectionHeadersEnabled={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
 
-      {/* Modal de Cancelamento */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -138,7 +164,7 @@ export default function AgendaScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Tem certeza que deseja cancelar?</Text>
-            <Text style={styles.modalSubtitle}>Esta ação não pode ser desfeita.</Text>
+            <Text style={styles.modalSubtitle}>O horário volta a ficar disponível para outros pacientes.</Text>
             <TextInput
               style={styles.input}
               placeholder="* Motivo do cancelamento"
@@ -182,7 +208,14 @@ const styles = StyleSheet.create({
   headerIcon: {
     padding: 5,
   },
-  emptyText: { textAlign: 'center', marginTop: 50, fontSize: 16, color: '#888' },
+  emptyText: { textAlign: 'center', marginTop: 10, fontSize: 15, color: '#888' },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginHorizontal: 20, marginTop: 20 },
+  status: { fontSize: 13, fontWeight: 'bold' },
+  avaliarButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start',
+    backgroundColor: '#00A896', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, marginTop: 12,
+  },
+  avaliarText: { color: '#fff', fontWeight: 'bold', marginLeft: 6 },
   card: {
     backgroundColor: '#fff',
     padding: 15,

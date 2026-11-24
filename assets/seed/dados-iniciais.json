@@ -1,0 +1,603 @@
+{
+  "especialidades": [
+    {
+      "id": 1,
+      "nome": "Acupuntura",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 2,
+      "nome": "Alergia e Imunologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 3,
+      "nome": "Análises Clínicas",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 4,
+      "nome": "Anestesiologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 5,
+      "nome": "Cardiologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 6,
+      "nome": "Cirurgia Geral",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 7,
+      "nome": "Clínico Geral",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 8,
+      "nome": "Colonoscopia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 9,
+      "nome": "Densitometria Óssea",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 10,
+      "nome": "Dermatologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 11,
+      "nome": "Eletrocardiograma (ECG)",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 12,
+      "nome": "Endocrinologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 13,
+      "nome": "Endoscopia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 14,
+      "nome": "Exames de Sangue",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 15,
+      "nome": "Fisioterapia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 16,
+      "nome": "Gastroenterologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 17,
+      "nome": "Ginecologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 18,
+      "nome": "Mamografia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 19,
+      "nome": "Neurologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 20,
+      "nome": "Nutrição",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 21,
+      "nome": "Oftalmologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 22,
+      "nome": "Ortopedia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 23,
+      "nome": "Otorrinolaringologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 24,
+      "nome": "Pediatria",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 25,
+      "nome": "Pequenas Cirurgias",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 26,
+      "nome": "Psicologia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 27,
+      "nome": "Psiquiatria",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 28,
+      "nome": "Raio X",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 29,
+      "nome": "Ressonância Magnética",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 30,
+      "nome": "Tomografia Computadorizada",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 31,
+      "nome": "Ultrassonografia / Ecografia",
+      "descricao": null,
+      "icone": null
+    },
+    {
+      "id": 32,
+      "nome": "Urologia",
+      "descricao": null,
+      "icone": null
+    }
+  ],
+  "estabelecimentos": [
+    {
+      "id": 1,
+      "nome": "Hospital Central da Serra",
+      "tipo": "hospital",
+      "cnes": null,
+      "cidade": "Caxias do Sul",
+      "bairro": "Centro",
+      "endereco": "Av. Júlio de Castilhos, 2045, Caxias do Sul",
+      "telefone": "(54) 3225-8899",
+      "lat": -29.1654,
+      "lng": -51.1834
+    },
+    {
+      "id": 2,
+      "nome": "Clínica Saúde Plena",
+      "tipo": "clinica",
+      "cnes": null,
+      "cidade": "Caxias do Sul",
+      "bairro": "Centro",
+      "endereco": "Rua das Flores, 123, Caxias do Sul",
+      "telefone": "(54) 3223-1122",
+      "lat": -29.1685,
+      "lng": -51.1797
+    },
+    {
+      "id": 3,
+      "nome": "Laboratório Exame Certo",
+      "tipo": "laboratorio",
+      "cnes": null,
+      "cidade": "Caxias do Sul",
+      "bairro": "Centro",
+      "endereco": "Rua Sinimbu, 1500, Caxias do Sul",
+      "telefone": "(54) 3228-4455",
+      "lat": -29.1711,
+      "lng": -51.1782
+    },
+    {
+      "id": 4,
+      "nome": "Clínica Pediátrica Anjos",
+      "tipo": "clinica",
+      "cnes": null,
+      "cidade": "Caxias do Sul",
+      "bairro": "Centro",
+      "endereco": "Rua Bento Gonçalves, 1890, Caxias do Sul",
+      "telefone": "(54) 3214-6677",
+      "lat": -29.172,
+      "lng": -51.179
+    },
+    {
+      "id": 5,
+      "nome": "Consultório Dra. Helena Costa",
+      "tipo": "consultorio",
+      "cnes": null,
+      "cidade": "Caxias do Sul",
+      "bairro": "Centro",
+      "endereco": "Rua das Acácias, 789, Sala 304, Caxias do Sul",
+      "telefone": "(54) 99888-7777",
+      "lat": -29.168,
+      "lng": -51.18
+    }
+  ],
+  "prestadores": [
+    {
+      "id": 1,
+      "idEspecialidade": 7,
+      "nome": "Dr. Carlos Silva",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 2,
+      "idEspecialidade": 5,
+      "nome": "Dra. Ana Souza",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 3,
+      "idEspecialidade": 22,
+      "nome": "Dr. Pedro Oliveira",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 4,
+      "idEspecialidade": 24,
+      "nome": "Dra. Beatriz Costa",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 5,
+      "idEspecialidade": 10,
+      "nome": "Dr. João Mendes",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 6,
+      "idEspecialidade": 17,
+      "nome": "Dra. Sofia Martins",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 7,
+      "idEspecialidade": 16,
+      "nome": "Dr. Lucas Ferreira",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 8,
+      "idEspecialidade": 26,
+      "nome": "Dra. Helena Costa",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 9,
+      "idEspecialidade": 24,
+      "nome": "Dr. Rafael Lima",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 10,
+      "idEspecialidade": 6,
+      "nome": "Dr. Marcelo Teixeira",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 11,
+      "idEspecialidade": 25,
+      "nome": "Dr. Gustavo Ramos",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 12,
+      "idEspecialidade": 3,
+      "nome": "Dra. Juliana Pereira",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 13,
+      "idEspecialidade": 14,
+      "nome": "Dra. Camila Rocha",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 14,
+      "idEspecialidade": 28,
+      "nome": "Dr. André Moreira",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 15,
+      "idEspecialidade": 18,
+      "nome": "Dra. Patrícia Alves",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 16,
+      "idEspecialidade": 30,
+      "nome": "Dr. Fernando Castro",
+      "registro": null,
+      "biografia": null
+    },
+    {
+      "id": 17,
+      "idEspecialidade": 2,
+      "nome": "Dra. Larissa Nunes",
+      "registro": null,
+      "biografia": null
+    }
+  ],
+  "prestadoresEstabelecimentos": [
+    {
+      "idPrestador": 1,
+      "idEstabelecimento": 2,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 2,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 2,
+      "idEstabelecimento": 2,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 3,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 4,
+      "idEstabelecimento": 4,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 5,
+      "idEstabelecimento": 2,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 6,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 7,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 7,
+      "idEstabelecimento": 2,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 8,
+      "idEstabelecimento": 5,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 9,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 10,
+      "idEstabelecimento": 1,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 11,
+      "idEstabelecimento": 2,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 12,
+      "idEstabelecimento": 3,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 13,
+      "idEstabelecimento": 3,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 14,
+      "idEstabelecimento": 3,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 15,
+      "idEstabelecimento": 3,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 16,
+      "idEstabelecimento": 3,
+      "modalidade": "presencial"
+    },
+    {
+      "idPrestador": 17,
+      "idEstabelecimento": 4,
+      "modalidade": "presencial"
+    }
+  ],
+  "pacientes": [
+    {
+      "id": 1,
+      "nome": "Paciente Exemplo",
+      "email": "paciente@saudemaisserra.app",
+      "cpf": null,
+      "telefone": null,
+      "cidade": "Caxias do Sul"
+    }
+  ],
+  "agendamentos": [
+    {
+      "id": 1,
+      "idPaciente": 1,
+      "idPrestador": 2,
+      "idEstabelecimento": 1,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": -40,
+      "hora": "09:00",
+      "duracaoMin": 30,
+      "status": "realizado"
+    },
+    {
+      "id": 2,
+      "idPaciente": 1,
+      "idPrestador": 1,
+      "idEstabelecimento": 2,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": -30,
+      "hora": "10:00",
+      "duracaoMin": 30,
+      "status": "realizado"
+    },
+    {
+      "id": 3,
+      "idPaciente": 1,
+      "idPrestador": 13,
+      "idEstabelecimento": 3,
+      "tipo": "exame",
+      "diasAPartirDeHoje": -25,
+      "hora": "14:00",
+      "duracaoMin": 30,
+      "status": "realizado"
+    },
+    {
+      "id": 4,
+      "idPaciente": 1,
+      "idPrestador": 5,
+      "idEstabelecimento": 2,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": -15,
+      "hora": "09:30",
+      "duracaoMin": 30,
+      "status": "realizado"
+    },
+    {
+      "id": 5,
+      "idPaciente": 1,
+      "idPrestador": 7,
+      "idEstabelecimento": 1,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": -10,
+      "hora": "11:00",
+      "duracaoMin": 30,
+      "status": "cancelado"
+    },
+    {
+      "id": 6,
+      "idPaciente": 1,
+      "idPrestador": 3,
+      "idEstabelecimento": 1,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": -5,
+      "hora": "15:30",
+      "duracaoMin": 30,
+      "status": "faltou"
+    },
+    {
+      "id": 7,
+      "idPaciente": 1,
+      "idPrestador": 2,
+      "idEstabelecimento": 2,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": 3,
+      "hora": "10:00",
+      "duracaoMin": 30,
+      "status": "agendado"
+    },
+    {
+      "id": 8,
+      "idPaciente": 1,
+      "idPrestador": 4,
+      "idEstabelecimento": 4,
+      "tipo": "consulta",
+      "diasAPartirDeHoje": 7,
+      "hora": "09:00",
+      "duracaoMin": 30,
+      "status": "agendado"
+    },
+    {
+      "id": 9,
+      "idPaciente": 1,
+      "idPrestador": 15,
+      "idEstabelecimento": 3,
+      "tipo": "exame",
+      "diasAPartirDeHoje": 10,
+      "hora": "14:00",
+      "duracaoMin": 30,
+      "status": "agendado"
+    }
+  ],
+  "avaliacoes": [
+    {
+      "idAgendamento": 1,
+      "idPaciente": 1,
+      "idPrestador": 2,
+      "nota": 5,
+      "comentario": "Atendimento atencioso e pontual."
+    },
+    {
+      "idAgendamento": 2,
+      "idPaciente": 1,
+      "idPrestador": 1,
+      "nota": 4,
+      "comentario": null
+    }
+  ]
+}

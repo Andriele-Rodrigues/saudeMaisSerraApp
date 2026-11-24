@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "SaudeMaisSerraApp",
+    "name": "+ Saúde Serra",
     "slug": "SaudeMaisSerraApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "SaudeMaisSerraApp",
+    "scheme": "saudemaisserra",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.SaudeSerraApp0.x1"
+      "bundleIdentifier": "br.ucs.saudemaisserra"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.SaudeSerraApp0.x1"
+      "package": "br.ucs.saudemaisserra"
     },
     "web": {
       "output": "static",
@@ -40,11 +40,21 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "09d6e286-826e-4ff2-aed6-1021082a1e3a"
+      }
+    },
+    "owner": "andriele"
   }
 }

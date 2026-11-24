@@ -23,6 +23,8 @@ erDiagram
     AGENDAMENTO ||--o| AVALIACAO : "gera"
     PACIENTE ||--o{ AVALIACAO : "escreve"
     PRESTADOR ||--o{ AVALIACAO : "recebe"
+    PACIENTE ||--o{ FAVORITO : "marca"
+    ESTABELECIMENTO ||--o{ FAVORITO : "é marcado em"
 
     PACIENTE {
         INTEGER id_paciente PK
@@ -87,6 +89,12 @@ erDiagram
         INTEGER nota
         TEXT comentario
         TEXT data_avaliacao
+    }
+    FAVORITO {
+        INTEGER id_favorito PK
+        INTEGER id_paciente FK
+        INTEGER id_estabelecimento FK
+        TEXT criado_em
     }
 ```
 
@@ -189,6 +197,17 @@ Um profissional pode atender em vários estabelecimentos, e um estabelecimento p
 
 O campo `id_agendamento` é único para limitar cada atendimento a, no máximo, uma avaliação. Os campos `id_paciente` e `id_prestador` repetem informações disponíveis no agendamento e devem ser mantidos consistentes com ele.
 
+### `favorito` — estabelecimentos marcados pelo paciente
+
+| Coluna | Tipo | Restrição |
+|---|---|---|
+| `id_favorito` | INTEGER | PK, AUTOINCREMENT |
+| `id_paciente` | INTEGER | NOT NULL, FK → `paciente(id_paciente)` ON DELETE CASCADE |
+| `id_estabelecimento` | INTEGER | NOT NULL, FK → `estabelecimento(id_estabelecimento)` ON DELETE CASCADE |
+| `criado_em` | TEXT | NOT NULL, DEFAULT `datetime('now','localtime')` |
+
+**Restrição adicional:** `UNIQUE (id_paciente, id_estabelecimento)` impede marcar o mesmo estabelecimento duas vezes.
+
 ---
 
 ## Resumo dos relacionamentos
@@ -205,14 +224,18 @@ O campo `id_agendamento` é único para limitar cada atendimento a, no máximo, 
 | `agendamento` → `avaliacao` | 1 : 0..1 | Cada agendamento admite no máximo uma avaliação |
 | `paciente` → `avaliacao` | 1 : N | Um paciente pode escrever várias avaliações |
 | `prestador` → `avaliacao` | 1 : N | Um prestador pode receber várias avaliações |
+| `paciente` → `favorito` | 1 : N | Um paciente pode marcar vários estabelecimentos como favoritos |
+| `estabelecimento` → `favorito` | 1 : N | Um estabelecimento pode ser favorito de vários pacientes |
 
-Há **9 referências por chave estrangeira** (sem contar o relacionamento N:N derivado): 1 em `prestador`, 2 em `prestador_estabelecimento`, 3 em `agendamento` e 3 em `avaliacao`.
+Há **11 referências por chave estrangeira** (sem contar o relacionamento N:N derivado): 1 em `prestador`, 2 em `prestador_estabelecimento`, 3 em `agendamento`, 3 em `avaliacao` e 2 em `favorito`.
 
 ---
 
 ## Regras de negócio e validações adicionais
 
 As regras abaixo complementam as restrições declaradas nas tabelas. **Sua descrição não significa que já estejam implementadas**: devem ser verificadas no código do aplicativo ou implementadas por mecanismos apropriados no banco.
+
+Na entrega da Etapa 2, o aplicativo já aplica as regras 3 (validação de conflito em `confirmarAgendamento`, ignorando cancelados), 4 (a avaliação só é aceita para agendamentos `realizado`, e o prestador é lido do próprio agendamento em `registrarAvaliacao`) e 5 para inserções (trigger `trg_atualiza_media_prestador_insert`). As demais continuam como validações a implementar.
 
 1. **Vínculo entre profissional e estabelecimento.** Quando `id_estabelecimento` estiver preenchido em um agendamento, o par (`id_prestador`, `id_estabelecimento`) deve existir em `prestador_estabelecimento`. Como as colunas são mantidas separadamente e o estabelecimento pode ser nulo, o modelo atual não garante essa regra somente com as FKs individuais.
 2. **Modalidade de atendimento.** O campo `modalidade` da tabela associativa descreve o vínculo do prestador com um estabelecimento. O modelo atual não possui uma coluna específica de modalidade em `agendamento`. Portanto, a distinção entre atendimento presencial e teleconsulta e a obrigatoriedade do local físico devem ser validadas por regras do aplicativo. A ausência de estabelecimento não deve, por si só, ser considerada prova de teleconsulta.
@@ -224,4 +247,4 @@ As regras abaixo complementam as restrições declaradas nas tabelas. **Sua desc
 
 ---
 
-**Atendimento aos requisitos da Etapa 1:** o modelo contém **7 tabelas** (mínimo de 4), todas com **3 ou mais colunas**, e **9 referências por chave estrangeira** entre tabelas (mínimo de uma relação entre duas tabelas). Apresenta também os tipos de dados, chaves, restrições, cardinalidades e regras de negócio solicitados.
+**Atendimento aos requisitos da Etapa 1:** o modelo contém **8 tabelas** (mínimo de 4), todas com **3 ou mais colunas**, e **11 referências por chave estrangeira** entre tabelas (mínimo de uma relação entre duas tabelas). Apresenta também os tipos de dados, chaves, restrições, cardinalidades e regras de negócio solicitados.

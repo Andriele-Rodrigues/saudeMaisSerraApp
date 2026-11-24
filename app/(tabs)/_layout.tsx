@@ -1,7 +1,7 @@
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -89,6 +89,24 @@ export default function TabLayout() {
         name="sintomas" 
         options={{
           href: null, 
+        }}
+      />
+      <Tabs.Screen
+        name="equipe-projeto"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="avaliar"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="indicadores"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
